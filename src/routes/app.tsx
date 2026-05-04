@@ -102,6 +102,15 @@ function WorkerApp() {
       .order("accepted_at", { ascending: false })
       .limit(50);
     setAcceptances((accs as Acceptance[]) ?? []);
+
+    const { data: execs } = await supabase
+      .from("shift_executions")
+      .select("id, status, shift_acceptances(shift_offers(demands(date, job_type)))")
+      .eq("worker_id", wid)
+      .in("status", ["scheduled", "in_progress"])
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setActiveExecs((execs as ActiveExec[]) ?? []);
   };
 
   const accept = async (offer: Offer) => {
