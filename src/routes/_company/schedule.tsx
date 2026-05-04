@@ -74,7 +74,18 @@ function Schedule() {
       return;
     }
 
-    const inserts: Array<Record<string, unknown>> = [];
+    type DemandInsert = {
+      contract_service_id: string;
+      date: string;
+      start_time: string;
+      end_time: string;
+      job_type: "chat" | "voice" | "visit";
+      hours_required: number;
+      slots_required: number;
+      weekend: boolean;
+      shift_type: "day" | "night";
+    };
+    const inserts: DemandInsert[] = [];
     const now = new Date();
     for (let d = 0; d < 7; d++) {
       const day = new Date(now);
@@ -95,7 +106,7 @@ function Schedule() {
           date: dateStr,
           start_time: start.toISOString(),
           end_time: end.toISOString(),
-          job_type: svc.service_type,
+          job_type: svc.service_type as "chat" | "voice" | "visit",
           hours_required: svc.hours_per_day,
           slots_required: svc.min_workers,
           weekend: isWeekend,
@@ -111,7 +122,7 @@ function Schedule() {
     if (data?.length) {
       const offers = data.map((d, i) => ({
         demand_id: d.id,
-        slots_total: inserts[i].slots_required as number,
+        slots_total: inserts[i].slots_required,
       }));
       await supabase.from("shift_offers").insert(offers);
     }
