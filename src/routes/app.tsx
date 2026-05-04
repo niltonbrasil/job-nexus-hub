@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -16,6 +16,8 @@ import {
   TrendingUp,
   Clock,
   Sparkles,
+  Play,
+  ChevronRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -48,15 +50,25 @@ type Acceptance = {
   shift_offers: { demand_id: string; demands: { job_type: string; date: string; hours_required: number } | null } | null;
 };
 
+type ActiveExec = {
+  id: string;
+  status: string;
+  shift_acceptances: {
+    shift_offers: { demands: { date: string; job_type: "chat" | "voice" | "visit" } | null } | null;
+  } | null;
+};
+
 function WorkerApp() {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const router = useRouter();
   const [tab, setTab] = useState<"hub" | "ops" | "earn">("hub");
   const [online, setOnline] = useState(true);
   const [workerId, setWorkerId] = useState<string | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [acceptances, setAcceptances] = useState<Acceptance[]>([]);
   const [reliability, setReliability] = useState(1);
+  const [activeExecs, setActiveExecs] = useState<ActiveExec[]>([]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -90,6 +102,15 @@ function WorkerApp() {
       .order("accepted_at", { ascending: false })
       .limit(50);
     setAcceptances((accs as Acceptance[]) ?? []);
+
+    const { data: execs } = await supabase
+      .from("shift_executions")
+      .select("id, status, shift_acceptances(shift_offers(demands(date, job_type)))")
+      .eq("worker_id", wid)
+      .in("status", ["scheduled", "in_progress"])
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setActiveExecs((execs as ActiveExec[]) ?? []);
   };
 
   const accept = async (offer: Offer) => {
@@ -209,6 +230,47 @@ function WorkerApp() {
                 );
               })}
             </div>
+
+            {activeExecs.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Em execução
+                </h3>
+                {activeExecs.map((e) => {
+                  const d = e.shift_acceptances?.shift_offers?.demands;
+                  if (!d) return null;
+                  const Icon = ICONS[d.job_type];
+                  const isLive = e.status === "in_progress";
+                  return (
+                    <button
+                      key={e.id}
+                      onClick={() =>
+                        router.navigate({ to: "/app/execution/$id", params: { id: e.id } })
+                      }
+                      className="flex w-full items-center justify-between rounded-2xl border border-border bg-card p-4 text-left shadow-elevate transition-all hover:border-accent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`flex h-10 w-10 items-center justify-center rounded-xl ${isLive ? "bg-success text-white" : "bg-navy text-ivory"}`}
+                        >
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <div>
+                          <p className="font-semibold capitalize">{LABELS[d.job_type]}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {isLive ? "Em andamento" : `Agendado · ${d.date}`}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="flex items-center gap-1 text-xs font-semibold text-accent">
+                        {isLive ? <Play className="h-3.5 w-3.5" /> : null} Abrir
+                        <ChevronRight className="h-4 w-4" />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             <div className="mt-4 rounded-2xl border border-border bg-card-elevated p-5 shadow-elevate">
               <div className="flex items-center justify-between">

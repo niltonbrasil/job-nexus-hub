@@ -19,6 +19,9 @@ import { Route as CompanyProfessionalsRouteImport } from './routes/_company/prof
 import { Route as CompanyDashboardRouteImport } from './routes/_company/dashboard'
 import { Route as CompanyContractsRouteImport } from './routes/_company/contracts'
 import { Route as CompanyBillingRouteImport } from './routes/_company/billing'
+import { Route as AppExecutionIdRouteImport } from './routes/app.execution.$id'
+import { Route as ApiPublicCronMonthlyBillingRouteImport } from './routes/api/public/cron/monthly-billing'
+import { Route as ApiPublicCronGenerateShiftsRouteImport } from './routes/api/public/cron/generate-shifts'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -69,10 +72,27 @@ const CompanyBillingRoute = CompanyBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => CompanyRoute,
 } as any)
+const AppExecutionIdRoute = AppExecutionIdRouteImport.update({
+  id: '/execution/$id',
+  path: '/execution/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const ApiPublicCronMonthlyBillingRoute =
+  ApiPublicCronMonthlyBillingRouteImport.update({
+    id: '/api/public/cron/monthly-billing',
+    path: '/api/public/cron/monthly-billing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronGenerateShiftsRoute =
+  ApiPublicCronGenerateShiftsRouteImport.update({
+    id: '/api/public/cron/generate-shifts',
+    path: '/api/public/cron/generate-shifts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/billing': typeof CompanyBillingRoute
@@ -80,10 +100,13 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof CompanyDashboardRoute
   '/professionals': typeof CompanyProfessionalsRoute
   '/schedule': typeof CompanyScheduleRoute
+  '/app/execution/$id': typeof AppExecutionIdRoute
+  '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
+  '/api/public/cron/monthly-billing': typeof ApiPublicCronMonthlyBillingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/billing': typeof CompanyBillingRoute
@@ -91,12 +114,15 @@ export interface FileRoutesByTo {
   '/dashboard': typeof CompanyDashboardRoute
   '/professionals': typeof CompanyProfessionalsRoute
   '/schedule': typeof CompanyScheduleRoute
+  '/app/execution/$id': typeof AppExecutionIdRoute
+  '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
+  '/api/public/cron/monthly-billing': typeof ApiPublicCronMonthlyBillingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_company': typeof CompanyRouteWithChildren
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_company/billing': typeof CompanyBillingRoute
@@ -104,6 +130,9 @@ export interface FileRoutesById {
   '/_company/dashboard': typeof CompanyDashboardRoute
   '/_company/professionals': typeof CompanyProfessionalsRoute
   '/_company/schedule': typeof CompanyScheduleRoute
+  '/app/execution/$id': typeof AppExecutionIdRoute
+  '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
+  '/api/public/cron/monthly-billing': typeof ApiPublicCronMonthlyBillingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +146,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/professionals'
     | '/schedule'
+    | '/app/execution/$id'
+    | '/api/public/cron/generate-shifts'
+    | '/api/public/cron/monthly-billing'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +160,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/professionals'
     | '/schedule'
+    | '/app/execution/$id'
+    | '/api/public/cron/generate-shifts'
+    | '/api/public/cron/monthly-billing'
   id:
     | '__root__'
     | '/'
@@ -140,14 +175,19 @@ export interface FileRouteTypes {
     | '/_company/dashboard'
     | '/_company/professionals'
     | '/_company/schedule'
+    | '/app/execution/$id'
+    | '/api/public/cron/generate-shifts'
+    | '/api/public/cron/monthly-billing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CompanyRoute: typeof CompanyRouteWithChildren
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiPublicCronGenerateShiftsRoute: typeof ApiPublicCronGenerateShiftsRoute
+  ApiPublicCronMonthlyBillingRoute: typeof ApiPublicCronMonthlyBillingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -222,6 +262,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanyBillingRouteImport
       parentRoute: typeof CompanyRoute
     }
+    '/app/execution/$id': {
+      id: '/app/execution/$id'
+      path: '/execution/$id'
+      fullPath: '/app/execution/$id'
+      preLoaderRoute: typeof AppExecutionIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/api/public/cron/monthly-billing': {
+      id: '/api/public/cron/monthly-billing'
+      path: '/api/public/cron/monthly-billing'
+      fullPath: '/api/public/cron/monthly-billing'
+      preLoaderRoute: typeof ApiPublicCronMonthlyBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/generate-shifts': {
+      id: '/api/public/cron/generate-shifts'
+      path: '/api/public/cron/generate-shifts'
+      fullPath: '/api/public/cron/generate-shifts'
+      preLoaderRoute: typeof ApiPublicCronGenerateShiftsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -244,13 +305,34 @@ const CompanyRouteChildren: CompanyRouteChildren = {
 const CompanyRouteWithChildren =
   CompanyRoute._addFileChildren(CompanyRouteChildren)
 
+interface AppRouteChildren {
+  AppExecutionIdRoute: typeof AppExecutionIdRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppExecutionIdRoute: AppExecutionIdRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CompanyRoute: CompanyRouteWithChildren,
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiPublicCronGenerateShiftsRoute: ApiPublicCronGenerateShiftsRoute,
+  ApiPublicCronMonthlyBillingRoute: ApiPublicCronMonthlyBillingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
