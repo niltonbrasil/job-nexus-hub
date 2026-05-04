@@ -9,38 +9,177 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as CompanyRouteImport } from './routes/_company'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompanyScheduleRouteImport } from './routes/_company/schedule'
+import { Route as CompanyProfessionalsRouteImport } from './routes/_company/professionals'
+import { Route as CompanyDashboardRouteImport } from './routes/_company/dashboard'
+import { Route as CompanyContractsRouteImport } from './routes/_company/contracts'
+import { Route as CompanyBillingRouteImport } from './routes/_company/billing'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompanyRoute = CompanyRouteImport.update({
+  id: '/_company',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompanyScheduleRoute = CompanyScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => CompanyRoute,
+} as any)
+const CompanyProfessionalsRoute = CompanyProfessionalsRouteImport.update({
+  id: '/professionals',
+  path: '/professionals',
+  getParentRoute: () => CompanyRoute,
+} as any)
+const CompanyDashboardRoute = CompanyDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => CompanyRoute,
+} as any)
+const CompanyContractsRoute = CompanyContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
+  getParentRoute: () => CompanyRoute,
+} as any)
+const CompanyBillingRoute = CompanyBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => CompanyRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/billing': typeof CompanyBillingRoute
+  '/contracts': typeof CompanyContractsRoute
+  '/dashboard': typeof CompanyDashboardRoute
+  '/professionals': typeof CompanyProfessionalsRoute
+  '/schedule': typeof CompanyScheduleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/billing': typeof CompanyBillingRoute
+  '/contracts': typeof CompanyContractsRoute
+  '/dashboard': typeof CompanyDashboardRoute
+  '/professionals': typeof CompanyProfessionalsRoute
+  '/schedule': typeof CompanyScheduleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_company': typeof CompanyRouteWithChildren
+  '/app': typeof AppRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/_company/billing': typeof CompanyBillingRoute
+  '/_company/contracts': typeof CompanyContractsRoute
+  '/_company/dashboard': typeof CompanyDashboardRoute
+  '/_company/professionals': typeof CompanyProfessionalsRoute
+  '/_company/schedule': typeof CompanyScheduleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/signup'
+    | '/billing'
+    | '/contracts'
+    | '/dashboard'
+    | '/professionals'
+    | '/schedule'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/signup'
+    | '/billing'
+    | '/contracts'
+    | '/dashboard'
+    | '/professionals'
+    | '/schedule'
+  id:
+    | '__root__'
+    | '/'
+    | '/_company'
+    | '/app'
+    | '/login'
+    | '/signup'
+    | '/_company/billing'
+    | '/_company/contracts'
+    | '/_company/dashboard'
+    | '/_company/professionals'
+    | '/_company/schedule'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompanyRoute: typeof CompanyRouteWithChildren
+  AppRoute: typeof AppRoute
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_company': {
+      id: '/_company'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof CompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,21 +187,70 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_company/schedule': {
+      id: '/_company/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof CompanyScheduleRouteImport
+      parentRoute: typeof CompanyRoute
+    }
+    '/_company/professionals': {
+      id: '/_company/professionals'
+      path: '/professionals'
+      fullPath: '/professionals'
+      preLoaderRoute: typeof CompanyProfessionalsRouteImport
+      parentRoute: typeof CompanyRoute
+    }
+    '/_company/dashboard': {
+      id: '/_company/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof CompanyDashboardRouteImport
+      parentRoute: typeof CompanyRoute
+    }
+    '/_company/contracts': {
+      id: '/_company/contracts'
+      path: '/contracts'
+      fullPath: '/contracts'
+      preLoaderRoute: typeof CompanyContractsRouteImport
+      parentRoute: typeof CompanyRoute
+    }
+    '/_company/billing': {
+      id: '/_company/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof CompanyBillingRouteImport
+      parentRoute: typeof CompanyRoute
+    }
   }
 }
 
+interface CompanyRouteChildren {
+  CompanyBillingRoute: typeof CompanyBillingRoute
+  CompanyContractsRoute: typeof CompanyContractsRoute
+  CompanyDashboardRoute: typeof CompanyDashboardRoute
+  CompanyProfessionalsRoute: typeof CompanyProfessionalsRoute
+  CompanyScheduleRoute: typeof CompanyScheduleRoute
+}
+
+const CompanyRouteChildren: CompanyRouteChildren = {
+  CompanyBillingRoute: CompanyBillingRoute,
+  CompanyContractsRoute: CompanyContractsRoute,
+  CompanyDashboardRoute: CompanyDashboardRoute,
+  CompanyProfessionalsRoute: CompanyProfessionalsRoute,
+  CompanyScheduleRoute: CompanyScheduleRoute,
+}
+
+const CompanyRouteWithChildren =
+  CompanyRoute._addFileChildren(CompanyRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompanyRoute: CompanyRouteWithChildren,
+  AppRoute: AppRoute,
+  LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
