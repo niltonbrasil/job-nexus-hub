@@ -428,6 +428,7 @@ export type Database = {
           notes: string | null
           proof_data: Json
           proof_type: Database["public"]["Enums"]["proof_type"]
+          status: Database["public"]["Enums"]["execution_status"]
           worked: boolean
           worker_id: string
         }
@@ -441,6 +442,7 @@ export type Database = {
           notes?: string | null
           proof_data?: Json
           proof_type?: Database["public"]["Enums"]["proof_type"]
+          status?: Database["public"]["Enums"]["execution_status"]
           worked?: boolean
           worker_id: string
         }
@@ -454,6 +456,7 @@ export type Database = {
           notes?: string | null
           proof_data?: Json
           proof_type?: Database["public"]["Enums"]["proof_type"]
+          status?: Database["public"]["Enums"]["execution_status"]
           worked?: boolean
           worker_id?: string
         }
@@ -635,12 +638,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_monthly_billing: {
+        Args: { _period_start?: string }
+        Returns: number
+      }
+      generate_shifts_for_date: { Args: { _date: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      worker_checkin: { Args: { _execution_id: string }; Returns: undefined }
+      worker_checkout: {
+        Args: { _execution_id: string; _hours?: number; _proof?: Json }
+        Returns: undefined
       }
     }
     Enums: {
@@ -655,6 +668,12 @@ export type Database = {
         | "partially_filled"
         | "filled"
         | "completed"
+        | "cancelled"
+      execution_status:
+        | "scheduled"
+        | "in_progress"
+        | "completed"
+        | "no_show"
         | "cancelled"
       offer_status: "open" | "closed"
       parity_type: "odd" | "even" | "none"
@@ -802,6 +821,13 @@ export const Constants = {
         "partially_filled",
         "filled",
         "completed",
+        "cancelled",
+      ],
+      execution_status: [
+        "scheduled",
+        "in_progress",
+        "completed",
+        "no_show",
         "cancelled",
       ],
       offer_status: ["open", "closed"],
