@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CompanyRouteImport } from './routes/_company'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompanyDashboardRouteImport } from './routes/_company/dashboard'
+import { Route as CompanyContractsRouteImport } from './routes/_company/contracts'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -23,38 +26,67 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompanyRoute = CompanyRouteImport.update({
+  id: '/_company',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CompanyDashboardRoute = CompanyDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => CompanyRoute,
+} as any)
+const CompanyContractsRoute = CompanyContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
+  getParentRoute: () => CompanyRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/contracts': typeof CompanyContractsRoute
+  '/dashboard': typeof CompanyDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/contracts': typeof CompanyContractsRoute
+  '/dashboard': typeof CompanyDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_company': typeof CompanyRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_company/contracts': typeof CompanyContractsRoute
+  '/_company/dashboard': typeof CompanyDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/signup'
+  fullPaths: '/' | '/login' | '/signup' | '/contracts' | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup'
-  id: '__root__' | '/' | '/login' | '/signup'
+  to: '/' | '/login' | '/signup' | '/contracts' | '/dashboard'
+  id:
+    | '__root__'
+    | '/'
+    | '/_company'
+    | '/login'
+    | '/signup'
+    | '/_company/contracts'
+    | '/_company/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompanyRoute: typeof CompanyRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
 }
@@ -75,6 +107,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_company': {
+      id: '/_company'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof CompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,11 +121,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_company/dashboard': {
+      id: '/_company/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof CompanyDashboardRouteImport
+      parentRoute: typeof CompanyRoute
+    }
+    '/_company/contracts': {
+      id: '/_company/contracts'
+      path: '/contracts'
+      fullPath: '/contracts'
+      preLoaderRoute: typeof CompanyContractsRouteImport
+      parentRoute: typeof CompanyRoute
+    }
   }
 }
 
+interface CompanyRouteChildren {
+  CompanyContractsRoute: typeof CompanyContractsRoute
+  CompanyDashboardRoute: typeof CompanyDashboardRoute
+}
+
+const CompanyRouteChildren: CompanyRouteChildren = {
+  CompanyContractsRoute: CompanyContractsRoute,
+  CompanyDashboardRoute: CompanyDashboardRoute,
+}
+
+const CompanyRouteWithChildren =
+  CompanyRoute._addFileChildren(CompanyRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompanyRoute: CompanyRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
 }
