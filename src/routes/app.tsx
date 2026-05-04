@@ -231,6 +231,47 @@ function WorkerApp() {
               })}
             </div>
 
+            {activeExecs.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Em execução
+                </h3>
+                {activeExecs.map((e) => {
+                  const d = e.shift_acceptances?.shift_offers?.demands;
+                  if (!d) return null;
+                  const Icon = ICONS[d.job_type];
+                  const isLive = e.status === "in_progress";
+                  return (
+                    <button
+                      key={e.id}
+                      onClick={() =>
+                        router.navigate({ to: "/app/execution/$id", params: { id: e.id } })
+                      }
+                      className="flex w-full items-center justify-between rounded-2xl border border-border bg-card p-4 text-left shadow-elevate transition-all hover:border-accent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`flex h-10 w-10 items-center justify-center rounded-xl ${isLive ? "bg-success text-white" : "bg-navy text-ivory"}`}
+                        >
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <div>
+                          <p className="font-semibold capitalize">{LABELS[d.job_type]}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {isLive ? "Em andamento" : `Agendado · ${d.date}`}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="flex items-center gap-1 text-xs font-semibold text-accent">
+                        {isLive ? <Play className="h-3.5 w-3.5" /> : null} Abrir
+                        <ChevronRight className="h-4 w-4" />
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="mt-4 rounded-2xl border border-border bg-card-elevated p-5 shadow-elevate">
               <div className="flex items-center justify-between">
                 <span className="text-xs uppercase tracking-wider text-muted-foreground">Ganhos do mês</span>
