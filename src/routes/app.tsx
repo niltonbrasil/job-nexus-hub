@@ -50,15 +50,25 @@ type Acceptance = {
   shift_offers: { demand_id: string; demands: { job_type: string; date: string; hours_required: number } | null } | null;
 };
 
+type ActiveExec = {
+  id: string;
+  status: string;
+  shift_acceptances: {
+    shift_offers: { demands: { date: string; job_type: "chat" | "voice" | "visit" } | null } | null;
+  } | null;
+};
+
 function WorkerApp() {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const router = useRouter();
   const [tab, setTab] = useState<"hub" | "ops" | "earn">("hub");
   const [online, setOnline] = useState(true);
   const [workerId, setWorkerId] = useState<string | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [acceptances, setAcceptances] = useState<Acceptance[]>([]);
   const [reliability, setReliability] = useState(1);
+  const [activeExecs, setActiveExecs] = useState<ActiveExec[]>([]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
