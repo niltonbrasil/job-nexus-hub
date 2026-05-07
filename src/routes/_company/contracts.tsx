@@ -202,6 +202,39 @@ function Contracts() {
                 </div>
               </div>
 
+              <div className="space-y-2 rounded-lg border border-border bg-secondary/30 p-3">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Regras de geração
+                </Label>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={weekend}
+                      onChange={(e) => setWeekend(e.target.checked)}
+                    />
+                    Finais de semana
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={nightShift}
+                      onChange={(e) => setNightShift(e.target.checked)}
+                    />
+                    Turno noturno
+                  </label>
+                  <select
+                    value={parity}
+                    onChange={(e) => setParity(e.target.value as "none" | "odd" | "even")}
+                    className="h-9 rounded-md border border-input bg-background px-2 text-xs"
+                  >
+                    <option value="none">Todos os dias</option>
+                    <option value="odd">Dias ímpares</option>
+                    <option value="even">Dias pares</option>
+                  </select>
+                </div>
+              </div>
+
               <DialogFooter>
                 <Button type="submit" variant="hero">Criar contrato</Button>
               </DialogFooter>
