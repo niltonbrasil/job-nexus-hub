@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useAuth } from "@/lib/auth";
+import { useAuth, type AppRole } from "@/lib/auth";
 import { BrandMark } from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,15 +26,22 @@ const NAV = [
 ] as const;
 
 function CompanyLayout() {
-  const { user, loading, signOut } = useAuth();
+  const { user, roles, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [user, loading, navigate]);
+  const isWorker = roles.includes("worker" as AppRole) && !roles.includes("company" as AppRole) && !roles.includes("admin" as AppRole);
 
-  if (loading || !user) {
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      navigate({ to: "/login" });
+      return;
+    }
+    if (isWorker) navigate({ to: "/app" });
+  }, [user, loading, isWorker, navigate]);
+
+  if (loading || !user || isWorker) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
