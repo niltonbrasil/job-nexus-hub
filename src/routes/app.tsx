@@ -48,6 +48,13 @@ type Acceptance = {
   id: string;
   accepted_at: string;
   status: string;
+  shift_executions: Array<{
+    status: string;
+    hours_worked: number | null;
+    applied_hours: number | null;
+    applied_rate_per_hour: number | null;
+    applied_amount: number | null;
+  }> | null;
   shift_offers: {
     demand_id: string;
     demands: {
