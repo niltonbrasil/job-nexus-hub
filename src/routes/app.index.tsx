@@ -113,6 +113,8 @@ function WorkerApp() {
   const [acceptances, setAcceptances] = useState<Acceptance[]>([]);
   const [reliability, setReliability] = useState(1);
   const [activeExecs, setActiveExecs] = useState<ActiveExec[]>([]);
+  const [confirmOffer, setConfirmOffer] = useState<Offer | null>(null);
+  const [accepting, setAccepting] = useState(false);
 
   useEffect(() => {
     if (loading) return;
