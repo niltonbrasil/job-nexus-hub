@@ -19,11 +19,22 @@ import {
   Navigation,
   ExternalLink,
   Check,
+  Building2,
+  FileText,
+  AlertTriangle,
 } from "lucide-react";
 
-// TODO: quando o schema tiver endereço da visita (em demands ou clients),
-// substituir o placeholder abaixo. Hoje não há coluna address — usamos fallback.
+// TODO(product): adicionar campo `visit_address` em `clients` ou `demands`
+// (ou em `contract_services.rules` JSON) para substituir o placeholder abaixo.
+// Hoje o schema não tem coluna de endereço de visita.
 const VISIT_ADDRESS_PLACEHOLDER = "Endereço não cadastrado para esta visita";
+
+const VISIT_INSTRUCTIONS = [
+  "Chegue com 5 minutos de antecedência e identifique-se na recepção.",
+  "Confirme presencialmente o responsável indicado pelo cliente.",
+  "Execute o atendimento conforme briefing combinado no contrato.",
+  "Registre observações relevantes no checkout para gerar prova de vida.",
+];
 
 export const Route = createFileRoute("/app/execution/$id")({
   head: () => ({ meta: [{ title: "Execução — Umbrella" }] }),
@@ -36,9 +47,24 @@ type ExecutionRow = {
   checkin_time: string | null;
   hours_worked: number;
   acceptance_id: string;
+  notes: string | null;
   shift_acceptances: {
     shift_offers: {
-      demands: { date: string; job_type: "chat" | "voice" | "visit"; hours_required: number } | null;
+      demands: {
+        date: string;
+        job_type: "chat" | "voice" | "visit";
+        hours_required: number;
+        start_time: string;
+        end_time: string;
+        priority: string;
+        weekend: boolean;
+        contract_services: {
+          contracts: {
+            name: string;
+            clients: { name: string; contact_email: string | null } | null;
+          } | null;
+        } | null;
+      } | null;
     } | null;
   } | null;
 };
@@ -53,6 +79,8 @@ function ExecutionMode() {
   const [loading, setLoading] = useState(true);
   const [elapsed, setElapsed] = useState(0);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [confirmPresence, setConfirmPresence] = useState(false);
+  const [checkoutNotes, setCheckoutNotes] = useState("");
 
   // Chat state
   const [messages, setMessages] = useState<Msg[]>([
@@ -67,7 +95,6 @@ function ExecutionMode() {
 
   // Visit checklist
   const [visitChecks, setVisitChecks] = useState({ arrived: false, contacted: false });
-  const [visitNotes, setVisitNotes] = useState("");
 
   const mapHref = coords
     ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`
@@ -79,12 +106,14 @@ function ExecutionMode() {
       const { data, error } = await supabase
         .from("shift_executions")
         .select(
-          "id, status, checkin_time, hours_worked, acceptance_id, shift_acceptances(shift_offers(demands(date, job_type, hours_required)))",
+          "id, status, checkin_time, hours_worked, acceptance_id, notes, shift_acceptances(shift_offers(demands(date, job_type, hours_required, start_time, end_time, priority, weekend, contract_services(contracts(name, clients(name, contact_email))))))",
         )
         .eq("id", id)
         .maybeSingle();
       if (error) toast.error(error.message);
-      setExec(data as ExecutionRow | null);
+      const row = data as ExecutionRow | null;
+      setExec(row);
+      if (row?.notes) setCheckoutNotes(row.notes);
       setLoading(false);
     })();
   }, [id, user]);
@@ -121,6 +150,10 @@ function ExecutionMode() {
     if (error) return toast.error(error.message);
     if (Object.keys(proof).length) {
       await supabase.from("execution_events").insert({ execution_id: id, type: "geo_checkin", metadata: proof });
+    } else {
+      await supabase
+        .from("execution_events")
+        .insert({ execution_id: id, type: "manual_checkin", metadata: { confirmed_presence: true } });
     }
     toast.success("Check-in registrado.");
     setExec((e) => (e ? { ...e, status: "in_progress", checkin_time: new Date().toISOString() } : e));
@@ -135,6 +168,9 @@ function ExecutionMode() {
       _proof: proof,
     });
     if (error) return toast.error(error.message);
+    if (checkoutNotes.trim()) {
+      await supabase.from("shift_executions").update({ notes: checkoutNotes.trim() }).eq("id", id);
+    }
     toast.success("Job finalizado. Confiabilidade atualizada.");
     setTimeout(() => navigate({ to: "/app" }), 800);
   };
@@ -144,7 +180,6 @@ function ExecutionMode() {
     const newMsg: Msg = { id: crypto.randomUUID(), from: "me", text: input, at: new Date().toISOString() };
     setMessages((m) => [...m, newMsg]);
     setInput("");
-    // simulate client reply
     setTimeout(() => {
       setMessages((m) => [
         ...m,
@@ -163,8 +198,14 @@ function ExecutionMode() {
 
   const demand = exec.shift_acceptances?.shift_offers?.demands;
   const jobType = demand?.job_type ?? "chat";
+  const contract = demand?.contract_services?.contracts;
+  const client = contract?.clients;
   const fmtTime = (s: number) =>
     `${String(Math.floor(s / 3600)).padStart(2, "0")}:${String(Math.floor((s % 3600) / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  const fmtHour = (iso?: string) =>
+    iso ? new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—";
+
+  const canCheckin = jobType !== "visit" || !!coords || confirmPresence;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background">
@@ -192,6 +233,53 @@ function ExecutionMode() {
         </div>
       </header>
 
+      {/* Cliente / Contrato / Plantão */}
+      {jobType === "visit" && demand && (
+        <section className="border-b border-border bg-card px-5 py-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <Building2 className="mt-0.5 h-4 w-4 text-accent" />
+            <div className="flex-1">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Cliente</p>
+              <p className="text-sm font-semibold">{client?.name ?? "—"}</p>
+              {client?.contact_email && (
+                <p className="text-xs text-muted-foreground">{client.contact_email}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <FileText className="mt-0.5 h-4 w-4 text-accent" />
+            <div className="flex-1">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Contrato</p>
+              <p className="text-sm font-semibold">{contract?.name ?? "—"}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 rounded-xl bg-secondary/50 p-3 text-center">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Data</p>
+              <p className="text-sm font-semibold">{demand.date}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Janela</p>
+              <p className="text-sm font-semibold">
+                {fmtHour(demand.start_time)}–{fmtHour(demand.end_time)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Horas</p>
+              <p className="text-sm font-semibold">{demand.hours_required}h</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 text-[10px] font-semibold uppercase tracking-wider">
+            <span className="rounded-full bg-secondary px-2 py-1 text-muted-foreground">
+              Prioridade · {demand.priority}
+            </span>
+            {demand.weekend && (
+              <span className="rounded-full bg-warning/20 px-2 py-1 text-warning-foreground">Fim de semana</span>
+            )}
+          </div>
+        </section>
+      )}
+
       <main className="flex flex-1 flex-col">
         {/* CHAT MODE */}
         {jobType === "chat" && exec.status === "in_progress" && (
@@ -201,9 +289,7 @@ function ExecutionMode() {
                 <div key={m.id} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
-                      m.from === "me"
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-secondary text-foreground"
+                      m.from === "me" ? "bg-accent text-accent-foreground" : "bg-secondary text-foreground"
                     }`}
                   >
                     {m.text}
@@ -230,7 +316,9 @@ function ExecutionMode() {
         {/* VOICE MODE */}
         {jobType === "voice" && exec.status === "in_progress" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-8 p-6">
-            <div className={`flex h-32 w-32 items-center justify-center rounded-full ${callActive ? "bg-success/20" : "bg-secondary"}`}>
+            <div
+              className={`flex h-32 w-32 items-center justify-center rounded-full ${callActive ? "bg-success/20" : "bg-secondary"}`}
+            >
               <PhoneCall className={`h-14 w-14 ${callActive ? "text-success" : "text-muted-foreground"}`} />
             </div>
             <div className="text-center">
@@ -279,6 +367,18 @@ function ExecutionMode() {
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="font-semibold text-sm">O que fazer nesta visita</p>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                {VISIT_INSTRUCTIONS.map((it, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                    <span>{it}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-5">
               <div className="flex items-center gap-3">
                 <Navigation className="h-5 w-5 text-accent" />
                 <p className="font-semibold">GPS</p>
@@ -309,20 +409,25 @@ function ExecutionMode() {
                   <span>{label}</span>
                   <span
                     className={`flex h-5 w-5 items-center justify-center rounded-md border ${
-                      visitChecks[k]
-                        ? "border-success bg-success text-white"
-                        : "border-border"
+                      visitChecks[k] ? "border-success bg-success text-white" : "border-border"
                     }`}
                   >
                     {visitChecks[k] && <Check className="h-3.5 w-3.5" />}
                   </span>
                 </button>
               ))}
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-5 space-y-2">
+              <p className="font-semibold text-sm">Observações do atendimento</p>
+              <p className="text-xs text-muted-foreground">
+                Será gravado em <code>shift_executions.notes</code> no checkout.
+              </p>
               <textarea
-                value={visitNotes}
-                onChange={(e) => setVisitNotes(e.target.value)}
-                placeholder="Observações (opcional)"
-                rows={3}
+                value={checkoutNotes}
+                onChange={(e) => setCheckoutNotes(e.target.value)}
+                placeholder="Como foi o atendimento? Houve intercorrências?"
+                rows={4}
                 className="w-full resize-none rounded-lg border border-border bg-background p-2 text-sm outline-none focus:border-accent"
               />
             </div>
@@ -349,23 +454,52 @@ function ExecutionMode() {
                     <ExternalLink className="h-3.5 w-3.5" /> Abrir no mapa
                   </a>
                 </div>
+
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <p className="font-semibold text-sm">O que fazer nesta visita</p>
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {VISIT_INSTRUCTIONS.map((it, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                        <span>{it}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
                 <div className="rounded-2xl border border-border bg-card p-5">
                   <div className="flex items-center gap-3">
                     <Navigation className="h-5 w-5 text-accent" />
-                    <p className="font-semibold">Check-in com GPS</p>
+                    <p className="font-semibold">Check-in</p>
                   </div>
                   {coords ? (
                     <p className="mt-2 font-mono text-xs text-success">
                       GPS pronto: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
                     </p>
                   ) : (
-                    <p className="mt-2 text-xs text-warning-foreground">
-                      Aguardando GPS… autorize a localização para registrar a chegada.
-                    </p>
+                    <>
+                      <div className="mt-2 flex items-start gap-2 rounded-lg bg-warning/10 p-3 text-xs text-warning-foreground">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>
+                          GPS indisponível. Confirme manualmente sua presença para registrar o check-in.
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmPresence((v) => !v)}
+                        className="mt-3 flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-left text-sm"
+                      >
+                        <span>Confirmo que estou presencialmente no local</span>
+                        <span
+                          className={`flex h-5 w-5 items-center justify-center rounded-md border ${
+                            confirmPresence ? "border-success bg-success text-white" : "border-border"
+                          }`}
+                        >
+                          {confirmPresence && <Check className="h-3.5 w-3.5" />}
+                        </span>
+                      </button>
+                    </>
                   )}
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    O check-in registra suas coordenadas como prova de chegada antes de iniciar o turno.
-                  </p>
                 </div>
               </>
             ) : (
@@ -408,17 +542,14 @@ function ExecutionMode() {
               size="lg"
               className="w-full"
               onClick={checkin}
-              disabled={jobType === "visit" && !coords}
+              disabled={!canCheckin}
             >
-              {jobType === "visit" && !coords ? "Aguardando GPS para check-in" : "Fazer check-in"}
+              {canCheckin
+                ? "Fazer check-in"
+                : "Aguardando GPS ou confirmação de presença"}
             </Button>
           ) : (
-            <Button
-              variant="navy"
-              size="lg"
-              className="w-full"
-              onClick={checkout}
-            >
+            <Button variant="navy" size="lg" className="w-full" onClick={checkout}>
               Finalizar e fazer checkout
             </Button>
           )}
