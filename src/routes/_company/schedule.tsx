@@ -166,14 +166,17 @@ function Schedule() {
     load();
   };
 
+  const [offers, setOffers] = useState<OfferDetail[]>([]);
   const openDetail = async (d: Demand) => {
     setSelected(d);
     const { data } = await supabase
       .from("shift_offers")
-      .select("id, slots_total, slots_filled, status")
+      .select("id, slots_total, slots_filled, status, wave, eligible_teams, opens_at")
       .eq("demand_id", d.id)
-      .maybeSingle();
-    setOffer((data as OfferDetail) ?? null);
+      .order("wave");
+    const list = (data as OfferDetail[]) ?? [];
+    setOffers(list);
+    setOffer(list[0] ?? null);
   };
 
   const reinforceOffer = async () => {
