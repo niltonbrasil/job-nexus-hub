@@ -6,7 +6,7 @@ import { OperationsProfileForm, type OperationsProfile } from "@/components/Oper
 import { BrandMark } from "@/components/BrandMark";
 import { Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/app_/profile/operations")({
+export const Route = createFileRoute("/app/profile/operations")({
   head: () => ({ meta: [{ title: "Perfil operacional — Umbrella" }] }),
   component: OperationsPage,
 });
