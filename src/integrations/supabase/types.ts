@@ -629,37 +629,64 @@ export type Database = {
       }
       workers: {
         Row: {
+          accepts_weekdays: boolean
+          accepts_weekends: boolean
           created_at: string
+          crew_role: string
           email: string | null
           id: string
+          line_parity_preference: string
+          max_hours_per_day: number
           name: string
+          operations_profile_completed: boolean
+          parity_scope: string
           phone: string | null
           status: Database["public"]["Enums"]["worker_status"]
           team: string | null
           type: Database["public"]["Enums"]["worker_type"]
           user_id: string
+          weekend_offer_advance: boolean
+          weekends_only: boolean
         }
         Insert: {
+          accepts_weekdays?: boolean
+          accepts_weekends?: boolean
           created_at?: string
+          crew_role?: string
           email?: string | null
           id?: string
+          line_parity_preference?: string
+          max_hours_per_day?: number
           name: string
+          operations_profile_completed?: boolean
+          parity_scope?: string
           phone?: string | null
           status?: Database["public"]["Enums"]["worker_status"]
           team?: string | null
           type?: Database["public"]["Enums"]["worker_type"]
           user_id: string
+          weekend_offer_advance?: boolean
+          weekends_only?: boolean
         }
         Update: {
+          accepts_weekdays?: boolean
+          accepts_weekends?: boolean
           created_at?: string
+          crew_role?: string
           email?: string | null
           id?: string
+          line_parity_preference?: string
+          max_hours_per_day?: number
           name?: string
+          operations_profile_completed?: boolean
+          parity_scope?: string
           phone?: string | null
           status?: Database["public"]["Enums"]["worker_status"]
           team?: string | null
           type?: Database["public"]["Enums"]["worker_type"]
           user_id?: string
+          weekend_offer_advance?: boolean
+          weekends_only?: boolean
         }
         Relationships: []
       }

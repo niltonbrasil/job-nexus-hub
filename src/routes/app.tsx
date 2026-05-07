@@ -40,6 +40,7 @@ type Offer = {
     end_time: string;
     job_type: "chat" | "voice" | "visit";
     hours_required: number;
+    weekend: boolean;
   } | null;
 };
 
@@ -66,6 +67,15 @@ function WorkerApp() {
   const [tab, setTab] = useState<"hub" | "ops" | "earn">("hub");
   const [online, setOnline] = useState(true);
   const [workerId, setWorkerId] = useState<string | null>(null);
+  const [workerProfile, setWorkerProfile] = useState<{
+    accepts_weekdays: boolean;
+    accepts_weekends: boolean;
+    weekends_only: boolean;
+    parity_scope: "odd" | "even" | "any";
+    crew_role: "line" | "reserve";
+    line_parity_preference: "odd" | "even" | "any";
+    weekend_offer_advance: boolean;
+  } | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [acceptances, setAcceptances] = useState<Acceptance[]>([]);
   const [reliability, setReliability] = useState(1);
@@ -80,9 +90,25 @@ function WorkerApp() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: w } = await supabase.from("workers").select("id").eq("user_id", user.id).maybeSingle();
-      if (!w) return;
+      const { data: w } = await supabase
+        .from("workers")
+        .select("id, operations_profile_completed, accepts_weekdays, accepts_weekends, weekends_only, parity_scope, crew_role, line_parity_preference, weekend_offer_advance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!w || !w.operations_profile_completed) {
+        navigate({ to: "/app/profile/operations" });
+        return;
+      }
       setWorkerId(w.id);
+      setWorkerProfile({
+        accepts_weekdays: w.accepts_weekdays,
+        accepts_weekends: w.accepts_weekends,
+        weekends_only: w.weekends_only,
+        parity_scope: w.parity_scope as "odd" | "even" | "any",
+        crew_role: w.crew_role as "line" | "reserve",
+        line_parity_preference: w.line_parity_preference as "odd" | "even" | "any",
+        weekend_offer_advance: w.weekend_offer_advance,
+      });
       const { data: m } = await supabase.from("worker_metrics").select("reliability_score").eq("worker_id", w.id).maybeSingle();
       if (m) setReliability(Number(m.reliability_score));
       load(w.id);
@@ -90,12 +116,13 @@ function WorkerApp() {
   }, [user]);
 
   const load = async (wid: string) => {
+    // TODO otimizar query: filtros aplicados client-side a partir do perfil operacional
     const { data: openOffers } = await supabase
       .from("shift_offers")
-      .select("id, slots_total, slots_filled, demand_id, demands(id, date, start_time, end_time, job_type, hours_required)")
+      .select("id, slots_total, slots_filled, demand_id, demands(id, date, start_time, end_time, job_type, hours_required, weekend)")
       .eq("status", "open")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
     setOffers((openOffers as Offer[]) ?? []);
 
     const { data: accs } = await supabase
@@ -138,18 +165,43 @@ function WorkerApp() {
 
   const earnings = acceptances.filter((a) => a.status === "accepted").reduce((s, a) => s + (a.shift_offers?.demands?.hours_required ?? 0) * 35, 0);
 
+  // Filtros derivados do perfil operacional (TODO: otimizar como query Supabase).
+  const filteredOffers = offers.filter((o) => {
+    const d = o.demands;
+    if (!d || !workerProfile) return false;
+    const wp = workerProfile;
+    if (d.weekend && !wp.accepts_weekends) return false;
+    if (!d.weekend && (!wp.accepts_weekdays || wp.weekends_only)) return false;
+    const day = new Date(d.date + "T00:00:00").getDate();
+    const dayParity: "odd" | "even" = day % 2 === 1 ? "odd" : "even";
+    if (wp.parity_scope !== "any" && wp.parity_scope !== dayParity) return false;
+    if (wp.crew_role === "line" && wp.line_parity_preference !== "any" && wp.line_parity_preference !== dayParity) return false;
+    return true;
+  });
+  if (workerProfile?.crew_role === "reserve" && workerProfile.weekend_offer_advance) {
+    filteredOffers.sort((a, b) => Number(b.demands?.weekend ?? 0) - Number(a.demands?.weekend ?? 0));
+  }
+
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background">
       {/* Header */}
       <header className="bg-hero px-5 pb-8 pt-6 text-white">
         <div className="flex items-center justify-between">
           <BrandMark light />
-          <button
-            onClick={() => signOut().then(() => navigate({ to: "/" }))}
-            className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <Link
+              to="/app/profile/operations"
+              className="rounded-lg px-3 py-2 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white"
+            >
+              Perfil
+            </Link>
+            <button
+              onClick={() => signOut().then(() => navigate({ to: "/" }))}
+              className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Status */}
@@ -213,13 +265,13 @@ function WorkerApp() {
           <div className="space-y-4">
             <h2 className="font-display text-2xl font-bold tracking-tight">Bom trabalho hoje.</h2>
             <p className="text-sm text-muted-foreground">
-              {offers.length} oportunidades disponíveis para você agora.
+              {filteredOffers.length} oportunidades disponíveis para você agora.
             </p>
 
             <div className="grid grid-cols-3 gap-3">
               {(["chat", "voice", "visit"] as const).map((k) => {
                 const Icon = ICONS[k];
-                const count = offers.filter((o) => o.demands?.job_type === k).length;
+                const count = filteredOffers.filter((o) => o.demands?.job_type === k).length;
                 return (
                   <button
                     key={k}
@@ -290,7 +342,7 @@ function WorkerApp() {
 
         {tab === "ops" && (
           <div className="space-y-3">
-            {offers.length === 0 ? (
+            {filteredOffers.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
                 <Clock className="mx-auto h-8 w-8 text-muted-foreground" />
                 <p className="mt-3 font-display font-semibold">Nenhuma oportunidade aberta</p>
@@ -299,7 +351,7 @@ function WorkerApp() {
                 </p>
               </div>
             ) : (
-              offers.map((o) => {
+              filteredOffers.map((o) => {
                 const d = o.demands;
                 if (!d) return null;
                 const Icon = ICONS[d.job_type];
