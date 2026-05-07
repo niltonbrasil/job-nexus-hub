@@ -90,6 +90,15 @@ function Pros() {
     reload();
   };
 
+  const setTeam = async (team: Team | null) => {
+    if (!selected) return;
+    const { error } = await supabase.from("workers").update({ team }).eq("id", selected.id);
+    if (error) return toast.error(error.message);
+    toast.success("Equipe atualizada.");
+    setSelected({ ...selected, team });
+    reload();
+  };
+
   const ranked = useMemo(() => {
     return [...workers]
       .map((w) => ({ w, m: metrics[w.id] }))
