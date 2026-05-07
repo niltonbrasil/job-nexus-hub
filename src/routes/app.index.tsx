@@ -455,12 +455,12 @@ function WorkerApp() {
                       </span>
                     </div>
                     <Button
-                      onClick={() => accept(o)}
+                      onClick={() => setConfirmOffer(o)}
                       variant="hero"
                       size="sm"
                       className="mt-4 w-full"
                     >
-                      Entrar no modo
+                      Aceitar plantão
                     </Button>
                   </div>
                 );
