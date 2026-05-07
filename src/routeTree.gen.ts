@@ -16,9 +16,12 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as CompanyRouteImport } from './routes/_company'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppMembershipsRouteImport } from './routes/app_.memberships'
 import { Route as CompanyScheduleRouteImport } from './routes/_company/schedule'
 import { Route as CompanyProfessionalsRouteImport } from './routes/_company/professionals'
+import { Route as CompanyPatientsRouteImport } from './routes/_company/patients'
 import { Route as CompanyDashboardRouteImport } from './routes/_company/dashboard'
+import { Route as CompanyCredentialsRouteImport } from './routes/_company/credentials'
 import { Route as CompanyContractsRouteImport } from './routes/_company/contracts'
 import { Route as CompanyBillingRouteImport } from './routes/_company/billing'
 import { Route as AppProfileOperationsRouteImport } from './routes/app_.profile.operations'
@@ -60,6 +63,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppMembershipsRoute = AppMembershipsRouteImport.update({
+  id: '/app_/memberships',
+  path: '/app/memberships',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompanyScheduleRoute = CompanyScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
@@ -70,9 +78,19 @@ const CompanyProfessionalsRoute = CompanyProfessionalsRouteImport.update({
   path: '/professionals',
   getParentRoute: () => CompanyRoute,
 } as any)
+const CompanyPatientsRoute = CompanyPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => CompanyRoute,
+} as any)
 const CompanyDashboardRoute = CompanyDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => CompanyRoute,
+} as any)
+const CompanyCredentialsRoute = CompanyCredentialsRouteImport.update({
+  id: '/credentials',
+  path: '/credentials',
   getParentRoute: () => CompanyRoute,
 } as any)
 const CompanyContractsRoute = CompanyContractsRouteImport.update({
@@ -117,9 +135,12 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/billing': typeof CompanyBillingRoute
   '/contracts': typeof CompanyContractsRoute
+  '/credentials': typeof CompanyCredentialsRoute
   '/dashboard': typeof CompanyDashboardRoute
+  '/patients': typeof CompanyPatientsRoute
   '/professionals': typeof CompanyProfessionalsRoute
   '/schedule': typeof CompanyScheduleRoute
+  '/app/memberships': typeof AppMembershipsRoute
   '/app/execution/$id': typeof AppExecutionIdRoute
   '/app/profile/operations': typeof AppProfileOperationsRoute
   '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
@@ -134,9 +155,12 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/billing': typeof CompanyBillingRoute
   '/contracts': typeof CompanyContractsRoute
+  '/credentials': typeof CompanyCredentialsRoute
   '/dashboard': typeof CompanyDashboardRoute
+  '/patients': typeof CompanyPatientsRoute
   '/professionals': typeof CompanyProfessionalsRoute
   '/schedule': typeof CompanyScheduleRoute
+  '/app/memberships': typeof AppMembershipsRoute
   '/app/execution/$id': typeof AppExecutionIdRoute
   '/app/profile/operations': typeof AppProfileOperationsRoute
   '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
@@ -153,9 +177,12 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_company/billing': typeof CompanyBillingRoute
   '/_company/contracts': typeof CompanyContractsRoute
+  '/_company/credentials': typeof CompanyCredentialsRoute
   '/_company/dashboard': typeof CompanyDashboardRoute
+  '/_company/patients': typeof CompanyPatientsRoute
   '/_company/professionals': typeof CompanyProfessionalsRoute
   '/_company/schedule': typeof CompanyScheduleRoute
+  '/app_/memberships': typeof AppMembershipsRoute
   '/app/execution/$id': typeof AppExecutionIdRoute
   '/app_/profile/operations': typeof AppProfileOperationsRoute
   '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
@@ -172,9 +199,12 @@ export interface FileRouteTypes {
     | '/signup'
     | '/billing'
     | '/contracts'
+    | '/credentials'
     | '/dashboard'
+    | '/patients'
     | '/professionals'
     | '/schedule'
+    | '/app/memberships'
     | '/app/execution/$id'
     | '/app/profile/operations'
     | '/api/public/cron/generate-shifts'
@@ -189,9 +219,12 @@ export interface FileRouteTypes {
     | '/signup'
     | '/billing'
     | '/contracts'
+    | '/credentials'
     | '/dashboard'
+    | '/patients'
     | '/professionals'
     | '/schedule'
+    | '/app/memberships'
     | '/app/execution/$id'
     | '/app/profile/operations'
     | '/api/public/cron/generate-shifts'
@@ -207,9 +240,12 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_company/billing'
     | '/_company/contracts'
+    | '/_company/credentials'
     | '/_company/dashboard'
+    | '/_company/patients'
     | '/_company/professionals'
     | '/_company/schedule'
+    | '/app_/memberships'
     | '/app/execution/$id'
     | '/app_/profile/operations'
     | '/api/public/cron/generate-shifts'
@@ -224,6 +260,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  AppMembershipsRoute: typeof AppMembershipsRoute
   AppProfileOperationsRoute: typeof AppProfileOperationsRoute
   ApiPublicCronGenerateShiftsRoute: typeof ApiPublicCronGenerateShiftsRoute
   ApiPublicCronMonthlyBillingRoute: typeof ApiPublicCronMonthlyBillingRoute
@@ -280,6 +317,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app_/memberships': {
+      id: '/app_/memberships'
+      path: '/app/memberships'
+      fullPath: '/app/memberships'
+      preLoaderRoute: typeof AppMembershipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_company/schedule': {
       id: '/_company/schedule'
       path: '/schedule'
@@ -294,11 +338,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanyProfessionalsRouteImport
       parentRoute: typeof CompanyRoute
     }
+    '/_company/patients': {
+      id: '/_company/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof CompanyPatientsRouteImport
+      parentRoute: typeof CompanyRoute
+    }
     '/_company/dashboard': {
       id: '/_company/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof CompanyDashboardRouteImport
+      parentRoute: typeof CompanyRoute
+    }
+    '/_company/credentials': {
+      id: '/_company/credentials'
+      path: '/credentials'
+      fullPath: '/credentials'
+      preLoaderRoute: typeof CompanyCredentialsRouteImport
       parentRoute: typeof CompanyRoute
     }
     '/_company/contracts': {
@@ -349,7 +407,9 @@ declare module '@tanstack/react-router' {
 interface CompanyRouteChildren {
   CompanyBillingRoute: typeof CompanyBillingRoute
   CompanyContractsRoute: typeof CompanyContractsRoute
+  CompanyCredentialsRoute: typeof CompanyCredentialsRoute
   CompanyDashboardRoute: typeof CompanyDashboardRoute
+  CompanyPatientsRoute: typeof CompanyPatientsRoute
   CompanyProfessionalsRoute: typeof CompanyProfessionalsRoute
   CompanyScheduleRoute: typeof CompanyScheduleRoute
 }
@@ -357,7 +417,9 @@ interface CompanyRouteChildren {
 const CompanyRouteChildren: CompanyRouteChildren = {
   CompanyBillingRoute: CompanyBillingRoute,
   CompanyContractsRoute: CompanyContractsRoute,
+  CompanyCredentialsRoute: CompanyCredentialsRoute,
   CompanyDashboardRoute: CompanyDashboardRoute,
+  CompanyPatientsRoute: CompanyPatientsRoute,
   CompanyProfessionalsRoute: CompanyProfessionalsRoute,
   CompanyScheduleRoute: CompanyScheduleRoute,
 }
@@ -383,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  AppMembershipsRoute: AppMembershipsRoute,
   AppProfileOperationsRoute: AppProfileOperationsRoute,
   ApiPublicCronGenerateShiftsRoute: ApiPublicCronGenerateShiftsRoute,
   ApiPublicCronMonthlyBillingRoute: ApiPublicCronMonthlyBillingRoute,
