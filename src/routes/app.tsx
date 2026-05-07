@@ -165,6 +165,23 @@ function WorkerApp() {
 
   const earnings = acceptances.filter((a) => a.status === "accepted").reduce((s, a) => s + (a.shift_offers?.demands?.hours_required ?? 0) * 35, 0);
 
+  // Filtros derivados do perfil operacional (TODO: otimizar como query Supabase).
+  const filteredOffers = offers.filter((o) => {
+    const d = o.demands;
+    if (!d || !workerProfile) return false;
+    const wp = workerProfile;
+    if (d.weekend && !wp.accepts_weekends) return false;
+    if (!d.weekend && (!wp.accepts_weekdays || wp.weekends_only)) return false;
+    const day = new Date(d.date + "T00:00:00").getDate();
+    const dayParity: "odd" | "even" = day % 2 === 1 ? "odd" : "even";
+    if (wp.parity_scope !== "any" && wp.parity_scope !== dayParity) return false;
+    if (wp.crew_role === "line" && wp.line_parity_preference !== "any" && wp.line_parity_preference !== dayParity) return false;
+    return true;
+  });
+  if (workerProfile?.crew_role === "reserve" && workerProfile.weekend_offer_advance) {
+    filteredOffers.sort((a, b) => Number(b.demands?.weekend ?? 0) - Number(a.demands?.weekend ?? 0));
+  }
+
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background">
       {/* Header */}
