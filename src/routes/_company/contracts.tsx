@@ -42,6 +42,9 @@ function Contracts() {
   const [hoursPerDay, setHoursPerDay] = useState<"4" | "12" | "24">("12");
   const [minWorkers, setMinWorkers] = useState(1);
   const [price, setPrice] = useState(35);
+  const [weekend, setWeekend] = useState(true);
+  const [parity, setParity] = useState<"none" | "odd" | "even">("none");
+  const [nightShift, setNightShift] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -95,7 +98,7 @@ function Contracts() {
       hours_per_day: Number(hoursPerDay),
       min_workers: minWorkers,
       price_per_hour: price,
-      rules: { weekend: true, parity: "none", night_shift: hoursPerDay === "24" },
+      rules: { weekend, parity, night_shift: nightShift || hoursPerDay === "24" },
     });
     if (svcErr) {
       toast.error(svcErr.message);
@@ -196,6 +199,39 @@ function Contracts() {
                     value={price}
                     onChange={(e) => setPrice(Number(e.target.value))}
                   />
+                </div>
+              </div>
+
+              <div className="space-y-2 rounded-lg border border-border bg-secondary/30 p-3">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Regras de geração
+                </Label>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={weekend}
+                      onChange={(e) => setWeekend(e.target.checked)}
+                    />
+                    Finais de semana
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={nightShift}
+                      onChange={(e) => setNightShift(e.target.checked)}
+                    />
+                    Turno noturno
+                  </label>
+                  <select
+                    value={parity}
+                    onChange={(e) => setParity(e.target.value as "none" | "odd" | "even")}
+                    className="h-9 rounded-md border border-input bg-background px-2 text-xs"
+                  >
+                    <option value="none">Todos os dias</option>
+                    <option value="odd">Dias ímpares</option>
+                    <option value="even">Dias pares</option>
+                  </select>
                 </div>
               </div>
 

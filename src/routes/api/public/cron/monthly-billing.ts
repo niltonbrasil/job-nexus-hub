@@ -5,7 +5,16 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const Route = createFileRoute("/api/public/cron/monthly-billing")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const token = request.headers.get("x-cron-secret");
+        const expected = process.env.CRON_SECRET;
+        if (!expected || token !== expected) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+
         const now = new Date();
         const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const firstOfLastMonth = new Date(firstOfThisMonth);
