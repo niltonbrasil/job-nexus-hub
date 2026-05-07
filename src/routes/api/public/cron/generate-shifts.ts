@@ -5,7 +5,16 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const Route = createFileRoute("/api/public/cron/generate-shifts")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const token = request.headers.get("x-cron-secret");
+        const expected = process.env.CRON_SECRET;
+        if (!expected || token !== expected) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+
         const today = new Date();
         const results: { date: string; created: number }[] = [];
         for (let i = 0; i < 7; i++) {
