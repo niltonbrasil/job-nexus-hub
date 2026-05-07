@@ -875,6 +875,18 @@ export type Database = {
         Args: { _execution_id: string; _hours?: number; _proof?: Json }
         Returns: undefined
       }
+      worker_has_accepted_for_client: {
+        Args: { _client_id: string; _user_id: string }
+        Returns: boolean
+      }
+      worker_has_accepted_for_contract: {
+        Args: { _contract_id: string; _user_id: string }
+        Returns: boolean
+      }
+      worker_has_accepted_for_contract_service: {
+        Args: { _cs_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       acceptance_source: "manual" | "auto"
