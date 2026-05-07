@@ -59,9 +59,10 @@ type ActiveExec = {
 };
 
 function WorkerApp() {
-  const { user, loading, signOut } = useAuth();
+  const { user, roles, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const router = useRouter();
+  const isCompanyOnly = (roles.includes("company") || roles.includes("admin")) && !roles.includes("worker");
   const [tab, setTab] = useState<"hub" | "ops" | "earn">("hub");
   const [online, setOnline] = useState(true);
   const [workerId, setWorkerId] = useState<string | null>(null);
@@ -71,8 +72,10 @@ function WorkerApp() {
   const [activeExecs, setActiveExecs] = useState<ActiveExec[]>([]);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [user, loading, navigate]);
+    if (loading) return;
+    if (!user) { navigate({ to: "/login" }); return; }
+    if (isCompanyOnly) navigate({ to: "/dashboard" });
+  }, [user, loading, isCompanyOnly, navigate]);
 
   useEffect(() => {
     if (!user) return;
