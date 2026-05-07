@@ -36,6 +36,7 @@ function SignupPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -59,6 +60,16 @@ function SignupPage() {
 
     if (error) {
       setSubmitting(false);
+      const msg = (error.message || "").toLowerCase();
+      if (
+        msg.includes("already registered") ||
+        msg.includes("already exists") ||
+        msg.includes("user already") ||
+        (error as { code?: string }).code === "user_already_exists"
+      ) {
+        setEmailExists(true);
+        return;
+      }
       toast.error(error.message);
       return;
     }
