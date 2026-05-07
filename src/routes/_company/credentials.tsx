@@ -127,7 +127,7 @@ function CredentialsPage() {
   };
 
   const availableWorkers = workers.filter(
-    (w) => !memberships.some((m) => m.worker_id === w.id && m.status !== "revoked" && m.status !== "revoked")
+    (w) => !memberships.some((m) => m.worker_id === w.id && m.status !== "revoked")
   );
 
   return (
