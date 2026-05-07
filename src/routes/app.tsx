@@ -181,12 +181,26 @@ function WorkerApp() {
     );
   }
 
-  const earningsFor = (a: Acceptance) => {
+  // Snapshot-first: usa applied_* da execução completed quando disponível.
+  // Fallback (legado): hours_required × price_per_hour atual do contrato.
+  const breakdownFor = (a: Acceptance) => {
+    const exec = a.shift_executions?.find((e) => e.status === "completed");
     const d = a.shift_offers?.demands;
-    const rate = Number(d?.contract_services?.price_per_hour ?? 0);
-    return (d?.hours_required ?? 0) * rate;
+    const contractRate = Number(d?.contract_services?.price_per_hour ?? 0);
+    if (exec && exec.applied_amount != null) {
+      return {
+        hours: Number(exec.applied_hours ?? exec.hours_worked ?? 0),
+        rate: Number(exec.applied_rate_per_hour ?? contractRate),
+        total: Number(exec.applied_amount),
+        legacy: false,
+      };
+    }
+    const hours = Number(d?.hours_required ?? 0);
+    return { hours, rate: contractRate, total: hours * contractRate, legacy: true };
   };
-  const earnings = acceptances.filter((a) => a.status === "accepted").reduce((s, a) => s + earningsFor(a), 0);
+  const earnings = acceptances
+    .filter((a) => a.status === "accepted")
+    .reduce((s, a) => s + breakdownFor(a).total, 0);
 
   // Filtros derivados do perfil operacional (TODO: otimizar como query Supabase).
   const filteredOffers = offers.filter((o) => {
