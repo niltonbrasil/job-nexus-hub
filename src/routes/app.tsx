@@ -206,9 +206,13 @@ function WorkerApp() {
     const hours = Number(d?.hours_required ?? 0);
     return { hours, rate: contractRate, total: hours * contractRate, legacy: true };
   };
+  // Acumulado real: só conta execuções concluídas (com applied_amount).
   const earnings = acceptances
     .filter((a) => a.status === "accepted")
-    .reduce((s, a) => s + breakdownFor(a).total, 0);
+    .reduce((s, a) => {
+      const exec = a.shift_executions?.find((e) => e.status === "completed");
+      return s + Number(exec?.applied_amount ?? 0);
+    }, 0);
 
   // Filtros derivados do perfil operacional (TODO: otimizar como query Supabase).
   const filteredOffers = offers.filter((o) => {
