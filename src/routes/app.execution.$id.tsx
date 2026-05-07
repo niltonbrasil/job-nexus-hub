@@ -65,6 +65,14 @@ function ExecutionMode() {
   const [callActive, setCallActive] = useState(false);
   const [muted, setMuted] = useState(false);
 
+  // Visit checklist
+  const [visitChecks, setVisitChecks] = useState({ arrived: false, contacted: false });
+  const [visitNotes, setVisitNotes] = useState("");
+
+  const mapHref = coords
+    ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(VISIT_ADDRESS_PLACEHOLDER)}`;
+
   useEffect(() => {
     if (!user) return;
     (async () => {
