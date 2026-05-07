@@ -887,6 +887,10 @@ export type Database = {
         Args: { _execution_id: string; _hours?: number; _proof?: Json }
         Returns: undefined
       }
+      worker_has_acceptance_for_demand: {
+        Args: { _demand_id: string; _user_id: string }
+        Returns: boolean
+      }
       worker_has_acceptance_for_offer: {
         Args: { _offer_id: string; _user_id: string }
         Returns: boolean
