@@ -429,9 +429,14 @@ function WorkerApp() {
                       key={a.id}
                       className="flex items-center justify-between rounded-xl border border-border bg-card p-3 text-sm"
                     >
-                      <div>
-                        <p className="font-medium capitalize">{d.job_type}</p>
-                        <p className="text-xs text-muted-foreground">{d.date}</p>
+                      <div className="min-w-0 flex-1 pr-3">
+                        <p className="truncate text-sm font-medium">
+                          {d.contract_services?.contracts?.clients?.name ?? "Cliente"}
+                          {d.contract_services?.contracts?.name ? ` · ${d.contract_services.contracts.name}` : ""}
+                        </p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {d.job_type} · {d.date} · {d.hours_required}h
+                        </p>
                       </div>
                       <span className="font-mono text-sm font-semibold text-accent">
                         R$ {(d.hours_required * 35).toFixed(2)}
