@@ -36,6 +36,7 @@ function SignupPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -59,6 +60,16 @@ function SignupPage() {
 
     if (error) {
       setSubmitting(false);
+      const msg = (error.message || "").toLowerCase();
+      if (
+        msg.includes("already registered") ||
+        msg.includes("already exists") ||
+        msg.includes("user already") ||
+        (error as { code?: string }).code === "user_already_exists"
+      ) {
+        setEmailExists(true);
+        return;
+      }
       toast.error(error.message);
       return;
     }
@@ -184,8 +195,24 @@ function SignupPage() {
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailExists) setEmailExists(false);
+                }}
               />
+              {emailExists && (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                  <p className="font-medium text-destructive">Este e-mail já está cadastrado.</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button asChild type="button" size="sm" variant="outline">
+                      <Link to="/login">Entrar</Link>
+                    </Button>
+                    <Button asChild type="button" size="sm" variant="ghost">
+                      <Link to="/forgot-password">Esqueci minha senha</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Telefone</Label>
