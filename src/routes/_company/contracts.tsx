@@ -98,7 +98,7 @@ function Contracts() {
       hours_per_day: Number(hoursPerDay),
       min_workers: minWorkers,
       price_per_hour: price,
-      rules: { weekend: true, parity: "none", night_shift: hoursPerDay === "24" },
+      rules: { weekend, parity, night_shift: nightShift || hoursPerDay === "24" },
     });
     if (svcErr) {
       toast.error(svcErr.message);
