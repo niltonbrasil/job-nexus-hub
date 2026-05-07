@@ -4,6 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/BrandMark";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -41,6 +49,13 @@ type Offer = {
     job_type: "chat" | "voice" | "visit";
     hours_required: number;
     weekend: boolean;
+    patients: { full_name: string } | null;
+    contract_services: {
+      contracts: {
+        name: string;
+        clients: { name: string } | null;
+      } | null;
+    } | null;
   } | null;
 };
 
@@ -98,6 +113,8 @@ function WorkerApp() {
   const [acceptances, setAcceptances] = useState<Acceptance[]>([]);
   const [reliability, setReliability] = useState(1);
   const [activeExecs, setActiveExecs] = useState<ActiveExec[]>([]);
+  const [confirmOffer, setConfirmOffer] = useState<Offer | null>(null);
+  const [accepting, setAccepting] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -137,7 +154,7 @@ function WorkerApp() {
     // TODO otimizar query: filtros aplicados client-side a partir do perfil operacional
     const { data: openOffers } = await supabase
       .from("shift_offers")
-      .select("id, slots_total, slots_filled, demand_id, demands(id, date, start_time, end_time, job_type, hours_required, weekend)")
+      .select("id, slots_total, slots_filled, demand_id, demands(id, date, start_time, end_time, job_type, hours_required, weekend, patients(full_name), contract_services(contracts(name, clients(name))))")
       .eq("status", "open")
       .order("created_at", { ascending: false })
       .limit(50);
@@ -169,15 +186,21 @@ function WorkerApp() {
     setActiveExecs((execs as ActiveExec[]) ?? []);
   };
 
-  const accept = async (offer: Offer) => {
-    if (!workerId) return;
+  const confirmAcceptance = async () => {
+    if (!workerId || !confirmOffer) return;
+    setAccepting(true);
     const { error } = await supabase.from("shift_acceptances").insert({
-      offer_id: offer.id,
+      offer_id: confirmOffer.id,
       worker_id: workerId,
       source: "manual",
     });
-    if (error) return toast.error(error.message);
-    toast.success("Job aceito. Boa execução!");
+    setAccepting(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Promessa de atendimento confirmada.");
+    setConfirmOffer(null);
     load(workerId);
   };
 
@@ -432,12 +455,12 @@ function WorkerApp() {
                       </span>
                     </div>
                     <Button
-                      onClick={() => accept(o)}
+                      onClick={() => setConfirmOffer(o)}
                       variant="hero"
                       size="sm"
                       className="mt-4 w-full"
                     >
-                      Entrar no modo
+                      Aceitar plantão
                     </Button>
                   </div>
                 );
@@ -502,6 +525,68 @@ function WorkerApp() {
           </div>
         )}
       </main>
+
+      <Dialog open={!!confirmOffer} onOpenChange={(o) => !o && setConfirmOffer(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar promessa de atendimento</DialogTitle>
+            <DialogDescription>
+              Ao confirmar, você se compromete a executar este plantão. A empresa será notificada do aceite.
+            </DialogDescription>
+          </DialogHeader>
+          {confirmOffer?.demands && (
+            <div className="space-y-2 rounded-xl border border-border bg-secondary/40 p-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Empresa</span>
+                <span className="font-semibold">
+                  {confirmOffer.demands.contract_services?.contracts?.clients?.name ?? "—"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Contrato</span>
+                <span className="font-semibold">
+                  {confirmOffer.demands.contract_services?.contracts?.name ?? "—"}
+                </span>
+              </div>
+              {confirmOffer.demands.patients?.full_name && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Paciente</span>
+                  <span className="font-semibold">{confirmOffer.demands.patients.full_name}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Tipo</span>
+                <span className="font-semibold capitalize">{LABELS[confirmOffer.demands.job_type]}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Data</span>
+                <span className="font-semibold">{confirmOffer.demands.date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Janela</span>
+                <span className="font-semibold">
+                  {new Date(confirmOffer.demands.start_time).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  –
+                  {new Date(confirmOffer.demands.end_time).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  {" "}({confirmOffer.demands.hours_required}h)
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Vagas</span>
+                <span className="font-semibold">{confirmOffer.slots_filled}/{confirmOffer.slots_total}</span>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOffer(null)} disabled={accepting}>
+              Cancelar
+            </Button>
+            <Button variant="hero" onClick={confirmAcceptance} disabled={accepting}>
+              {accepting ? "Confirmando..." : "Confirmar promessa de atendimento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
