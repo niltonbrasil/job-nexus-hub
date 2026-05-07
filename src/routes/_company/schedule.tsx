@@ -37,6 +37,8 @@ type Demand = {
   status: keyof typeof STATUS_COLORS;
   contract_service_id: string;
   priority: string;
+  block_index: number;
+  plan_snapshot: Record<string, unknown> | null;
 };
 
 type OfferDetail = {
@@ -44,6 +46,9 @@ type OfferDetail = {
   slots_total: number;
   slots_filled: number;
   status: string;
+  wave: number;
+  eligible_teams: string[];
+  opens_at: string;
 };
 
 function Schedule() {
@@ -66,7 +71,7 @@ function Schedule() {
     if (!sIds.length) return setDemands([]);
     const { data } = await supabase
       .from("demands")
-      .select("id, date, start_time, end_time, job_type, slots_required, status, contract_service_id, priority")
+      .select("id, date, start_time, end_time, job_type, slots_required, status, contract_service_id, priority, block_index, plan_snapshot")
       .in("contract_service_id", sIds)
       .order("date", { ascending: true });
     setDemands((data as Demand[]) ?? []);
