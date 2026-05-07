@@ -216,6 +216,7 @@ export type Database = {
           id: string
           min_workers: number
           padding_days: number
+          patient_id: string | null
           personalization: Json
           plan_level: string
           price_per_hour: number
@@ -230,6 +231,7 @@ export type Database = {
           id?: string
           min_workers?: number
           padding_days?: number
+          patient_id?: string | null
           personalization?: Json
           plan_level?: string
           price_per_hour?: number
@@ -244,6 +246,7 @@ export type Database = {
           id?: string
           min_workers?: number
           padding_days?: number
+          patient_id?: string | null
           personalization?: Json
           plan_level?: string
           price_per_hour?: number
@@ -256,6 +259,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_services_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]

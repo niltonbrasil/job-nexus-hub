@@ -44,6 +44,8 @@ function Contracts() {
   const [serviceType, setServiceType] = useState<"chat" | "voice" | "visit">("chat");
   const [price, setPrice] = useState(35);
   const [weekend, setWeekend] = useState(true);
+  const [patientId, setPatientId] = useState<string>("");
+  const [patients, setPatients] = useState<{ id: string; full_name: string }[]>([]);
   const cfg = PLAN_CONFIG[planLevel];
 
   const load = async () => {
@@ -51,6 +53,12 @@ function Contracts() {
     const { data: clients } = await supabase.from("clients").select("id");
     const ids = (clients ?? []).map((c) => c.id);
     if (!ids.length) return;
+    const { data: pts } = await supabase
+      .from("patients")
+      .select("id, full_name")
+      .in("client_id", ids)
+      .order("full_name");
+    setPatients(pts ?? []);
     const { data } = await supabase
       .from("contracts")
       .select("id, name, start_date, end_date, status, contract_services(id, service_type, hours_per_day, min_workers, price_per_hour)")
@@ -107,6 +115,7 @@ function Contracts() {
         blocks: cfg.blocks,
       },
       rules: { weekend, night_shift: cfg.hours_per_day >= 12 },
+      patient_id: patientId || null,
     });
     if (svcErr) {
       toast.error(svcErr.message);
@@ -147,6 +156,21 @@ function Contracts() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Operação SAC Q2"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Paciente</Label>
+                <select
+                  value={patientId}
+                  onChange={(e) => setPatientId(e.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">— sem paciente —</option>
+                  {patients.map((p) => (
+                    <option key={p.id} value={p.id}>{p.full_name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">Vincula o contrato ao paciente; ativa o bloqueio automático de conflito 12h.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
