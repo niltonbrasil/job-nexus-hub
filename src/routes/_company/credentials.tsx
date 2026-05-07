@@ -21,7 +21,7 @@ type Membership = {
   worker_id: string;
   client_id: string;
   profession_id: string | null;
-  status: "invited" | "requested" | "active" | "revoked" | "rejected";
+  status: "invited" | "requested" | "active" | "revoked";
   certification_valid_until: string | null;
   invited_at: string;
   responded_at: string | null;
@@ -33,8 +33,7 @@ const STATUS_LABEL: Record<Membership["status"], string> = {
   invited: "Convidado",
   requested: "Solicitou ingresso",
   active: "Ativo",
-  revoked: "Revogado",
-  rejected: "Recusado",
+  revoked: "Revogado/Recusado",
 };
 
 const STATUS_COLOR: Record<Membership["status"], string> = {
@@ -42,7 +41,6 @@ const STATUS_COLOR: Record<Membership["status"], string> = {
   requested: "bg-accent/15 text-accent",
   active: "bg-success/15 text-success",
   revoked: "bg-muted text-muted-foreground",
-  rejected: "bg-destructive/15 text-destructive",
 };
 
 function CredentialsPage() {
