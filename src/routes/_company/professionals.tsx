@@ -296,16 +296,17 @@ function Pros() {
 
             <div className="mt-5 space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Equipe</p>
-              <select
-                value={selected.team ?? ""}
-                onChange={(e) => setTeam((e.target.value || null) as Team | null)}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="">Sem equipe</option>
-                {(Object.keys(TEAM_LABEL) as Team[]).map((t) => (
-                  <option key={t} value={t}>{TEAM_LABEL[t]}</option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between rounded-md border border-border bg-secondary/40 px-3 py-2.5 text-sm">
+                <span className="font-medium">
+                  {selected.team ? TEAM_LABEL[selected.team] : "Sem equipe definida"}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Definido pelo profissional
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Para alterar, peça ao profissional para atualizar o perfil operacional.
+              </p>
             </div>
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
