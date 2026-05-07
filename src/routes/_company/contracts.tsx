@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, FileText, MessageSquare, PhoneCall, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { PLAN_CONFIG, CREDITS_OPTIONS, type PlanLevel } from "@/lib/distribution";
 
 export const Route = createFileRoute("/_company/contracts")({
   head: () => ({ meta: [{ title: "Contratos — Umbrella" }] }),
@@ -37,14 +38,13 @@ function Contracts() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [duration, setDuration] = useState<"1" | "3" | "6">("3");
+  const [planLevel, setPlanLevel] = useState<PlanLevel>("plano1");
+  const [creditsDays, setCreditsDays] = useState<number>(30);
+  const [paddingDays, setPaddingDays] = useState<number>(2);
   const [serviceType, setServiceType] = useState<"chat" | "voice" | "visit">("chat");
-  const [hoursPerDay, setHoursPerDay] = useState<"4" | "12" | "24">("12");
-  const [minWorkers, setMinWorkers] = useState(1);
   const [price, setPrice] = useState(35);
   const [weekend, setWeekend] = useState(true);
-  const [parity, setParity] = useState<"none" | "odd" | "even">("none");
-  const [nightShift, setNightShift] = useState(false);
+  const cfg = PLAN_CONFIG[planLevel];
 
   const load = async () => {
     if (!user) return;
@@ -73,7 +73,7 @@ function Contracts() {
     }
     const start = new Date();
     const end = new Date();
-    end.setMonth(end.getMonth() + Number(duration));
+    end.setDate(end.getDate() + creditsDays + paddingDays);
 
     const { data: contract, error } = await supabase
       .from("contracts")
@@ -95,10 +95,18 @@ function Contracts() {
     const { error: svcErr } = await supabase.from("contract_services").insert({
       contract_id: contract.id,
       service_type: serviceType,
-      hours_per_day: Number(hoursPerDay),
-      min_workers: minWorkers,
+      hours_per_day: cfg.hours_per_day,
+      min_workers: cfg.min_workers,
       price_per_hour: price,
-      rules: { weekend, parity, night_shift: nightShift || hoursPerDay === "24" },
+      plan_level: planLevel,
+      credits_days: creditsDays,
+      padding_days: paddingDays,
+      personalization: {
+        prio_per_parity: cfg.prio_per_parity,
+        folguistas_ativos: cfg.folguistas_ativos,
+        blocks: cfg.blocks,
+      },
+      rules: { weekend, night_shift: cfg.hours_per_day >= 12 },
     });
     if (svcErr) {
       toast.error(svcErr.message);
