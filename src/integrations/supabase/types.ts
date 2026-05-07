@@ -705,7 +705,7 @@ export type Database = {
         | "completed"
         | "no_show"
         | "cancelled"
-      offer_status: "open" | "closed"
+      offer_status: "open" | "closed" | "filled" | "cancelled"
       parity_type: "odd" | "even" | "none"
       priority_level: "low" | "normal" | "high"
       proof_type: "photo" | "gps" | "system" | "none"
@@ -860,7 +860,7 @@ export const Constants = {
         "no_show",
         "cancelled",
       ],
-      offer_status: ["open", "closed"],
+      offer_status: ["open", "closed", "filled", "cancelled"],
       parity_type: ["odd", "even", "none"],
       priority_level: ["low", "normal", "high"],
       proof_type: ["photo", "gps", "system", "none"],
