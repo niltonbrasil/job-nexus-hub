@@ -451,10 +451,13 @@ function WorkerApp() {
                 acceptances.map((a) => {
                   const d = a.shift_offers?.demands;
                   if (!d) return null;
+                  const b = breakdownFor(a);
+                  const tooltip = `${b.hours}h × R$ ${b.rate.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}/h = R$ ${b.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}${b.legacy ? " (estimado · legado)" : ""}`;
                   return (
                     <div
                       key={a.id}
                       className="flex items-center justify-between rounded-xl border border-border bg-card p-3 text-sm"
+                      title={tooltip}
                     >
                       <div className="min-w-0 flex-1 pr-3">
                         <p className="truncate text-sm font-medium">
@@ -462,11 +465,12 @@ function WorkerApp() {
                           {d.contract_services?.contracts?.name ? ` · ${d.contract_services.contracts.name}` : ""}
                         </p>
                         <p className="text-xs text-muted-foreground capitalize">
-                          {d.job_type} · {d.date} · {d.hours_required}h
+                          {d.job_type} · {d.date} · {b.hours}h × R$ {b.rate.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}/h
+                          {b.legacy ? " · estimado" : ""}
                         </p>
                       </div>
                       <span className="font-mono text-sm font-semibold text-accent">
-                        R$ {earningsFor(a).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        R$ {b.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   );
