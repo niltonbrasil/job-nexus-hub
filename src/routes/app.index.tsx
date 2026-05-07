@@ -152,7 +152,7 @@ function WorkerApp() {
     // TODO otimizar query: filtros aplicados client-side a partir do perfil operacional
     const { data: openOffers } = await supabase
       .from("shift_offers")
-      .select("id, slots_total, slots_filled, demand_id, demands(id, date, start_time, end_time, job_type, hours_required, weekend)")
+      .select("id, slots_total, slots_filled, demand_id, demands(id, date, start_time, end_time, job_type, hours_required, weekend, patients(full_name), contract_services(contracts(name, clients(name))))")
       .eq("status", "open")
       .order("created_at", { ascending: false })
       .limit(50);
