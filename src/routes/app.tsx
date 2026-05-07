@@ -141,15 +141,23 @@ function WorkerApp() {
       .eq("status", "open")
       .order("created_at", { ascending: false })
       .limit(50);
-    setOffers((openOffers as Offer[]) ?? []);
-
     const { data: accs } = await supabase
       .from("shift_acceptances")
-      .select("id, accepted_at, status, shift_executions(status, hours_worked, applied_hours, applied_rate_per_hour, applied_amount), shift_offers(demand_id, demands(job_type, date, hours_required, contract_services(price_per_hour, contracts(name, clients(name)))))")
+      .select("id, offer_id, accepted_at, status, shift_executions(status, hours_worked, applied_hours, applied_rate_per_hour, applied_amount), shift_offers(demand_id, demands(job_type, date, hours_required, contract_services(price_per_hour, contracts(name, clients(name)))))")
       .eq("worker_id", wid)
       .order("accepted_at", { ascending: false })
       .limit(50);
-    setAcceptances((accs as Acceptance[]) ?? []);
+    const acceptanceList = (accs as (Acceptance & { offer_id: string })[]) ?? [];
+    setAcceptances(acceptanceList);
+
+    const acceptedOfferIds = new Set(acceptanceList.filter((a) => a.status === "accepted").map((a) => a.offer_id));
+    const acceptedDemandIds = new Set(
+      acceptanceList.filter((a) => a.status === "accepted").map((a) => a.shift_offers?.demand_id).filter(Boolean) as string[],
+    );
+    const filtered = ((openOffers as Offer[]) ?? []).filter(
+      (o) => !acceptedOfferIds.has(o.id) && !acceptedDemandIds.has(o.demand_id),
+    );
+    setOffers(filtered);
 
     const { data: execs } = await supabase
       .from("shift_executions")
