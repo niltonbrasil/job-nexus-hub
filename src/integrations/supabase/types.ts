@@ -858,6 +858,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      company_owns_offer: {
+        Args: { _offer_id: string; _user_id: string }
+        Returns: boolean
+      }
       generate_monthly_billing: {
         Args: { _period_start?: string }
         Returns: number
@@ -882,6 +886,10 @@ export type Database = {
       worker_checkout: {
         Args: { _execution_id: string; _hours?: number; _proof?: Json }
         Returns: undefined
+      }
+      worker_has_acceptance_for_offer: {
+        Args: { _offer_id: string; _user_id: string }
+        Returns: boolean
       }
       worker_has_accepted_for_client: {
         Args: { _client_id: string; _user_id: string }
