@@ -17,7 +17,13 @@ import {
   Loader2,
   CheckCircle2,
   Navigation,
+  ExternalLink,
+  Check,
 } from "lucide-react";
+
+// TODO: quando o schema tiver endereço da visita (em demands ou clients),
+// substituir o placeholder abaixo. Hoje não há coluna address — usamos fallback.
+const VISIT_ADDRESS_PLACEHOLDER = "Endereço não cadastrado para esta visita";
 
 export const Route = createFileRoute("/app/execution/$id")({
   head: () => ({ meta: [{ title: "Execução — Umbrella" }] }),
