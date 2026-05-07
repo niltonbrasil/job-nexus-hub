@@ -438,9 +438,13 @@ export type Database = {
       shift_executions: {
         Row: {
           acceptance_id: string
+          applied_amount: number | null
+          applied_hours: number | null
+          applied_rate_per_hour: number | null
           checkin_time: string | null
           checkout_time: string | null
           created_at: string
+          currency: string
           hours_worked: number
           id: string
           notes: string | null
@@ -452,9 +456,13 @@ export type Database = {
         }
         Insert: {
           acceptance_id: string
+          applied_amount?: number | null
+          applied_hours?: number | null
+          applied_rate_per_hour?: number | null
           checkin_time?: string | null
           checkout_time?: string | null
           created_at?: string
+          currency?: string
           hours_worked?: number
           id?: string
           notes?: string | null
@@ -466,9 +474,13 @@ export type Database = {
         }
         Update: {
           acceptance_id?: string
+          applied_amount?: number | null
+          applied_hours?: number | null
+          applied_rate_per_hour?: number | null
           checkin_time?: string | null
           checkout_time?: string | null
           created_at?: string
+          currency?: string
           hours_worked?: number
           id?: string
           notes?: string | null
