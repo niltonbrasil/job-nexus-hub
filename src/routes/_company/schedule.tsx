@@ -395,7 +395,7 @@ function Schedule() {
               </div>
             )}
 
-
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <Button variant="hero" className="flex-1" onClick={reinforceOffer}>
                 <Megaphone className="h-4 w-4" /> Reforçar oferta
               </Button>
