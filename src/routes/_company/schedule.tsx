@@ -83,86 +83,23 @@ function Schedule() {
 
   const generateNextWeek = async () => {
     if (!user) return;
-    const { data: clients } = await supabase.from("clients").select("id");
-    const cIds = (clients ?? []).map((c) => c.id);
-    const { data: contracts } = await supabase.from("contracts").select("id").in("client_id", cIds).eq("status", "active");
-    const ctIds = (contracts ?? []).map((c) => c.id);
-    const { data: services } = await supabase
-      .from("contract_services")
-      .select("id, service_type, hours_per_day, min_workers, rules")
-      .in("contract_id", ctIds);
-
-    if (!services?.length) {
-      toast.error("Nenhum contrato ativo. Crie um contrato antes.");
-      return;
-    }
-
-    type DemandInsert = {
-      contract_service_id: string;
-      date: string;
-      start_time: string;
-      end_time: string;
-      job_type: "chat" | "voice" | "visit";
-      hours_required: number;
-      slots_required: number;
-      weekend: boolean;
-      shift_type: "day" | "night";
-    };
-    const inserts: DemandInsert[] = [];
     const now = new Date();
+    let totalCreated = 0;
+    let firstError: string | null = null;
     for (let d = 0; d < 7; d++) {
       const day = new Date(now);
       day.setDate(now.getDate() + d);
       const dateStr = day.toISOString().slice(0, 10);
-      const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-      const isOdd = day.getDate() % 2 === 1;
-
-      for (const svc of services) {
-        const rules = (svc.rules ?? {}) as {
-          weekend?: boolean;
-          parity?: "none" | "odd" | "even";
-          night_shift?: boolean;
-        };
-        if (isWeekend && rules.weekend === false) continue;
-        if (rules.parity === "odd" && !isOdd) continue;
-        if (rules.parity === "even" && isOdd) continue;
-
-        const start = new Date(day);
-        start.setHours(rules.night_shift ? 20 : 8, 0, 0, 0);
-        const end = new Date(start);
-        end.setHours(start.getHours() + svc.hours_per_day);
-
-        inserts.push({
-          contract_service_id: svc.id,
-          date: dateStr,
-          start_time: start.toISOString(),
-          end_time: end.toISOString(),
-          job_type: svc.service_type as "chat" | "voice" | "visit",
-          hours_required: svc.hours_per_day,
-          slots_required: svc.min_workers,
-          weekend: isWeekend,
-          shift_type: rules.night_shift || svc.hours_per_day >= 24 ? "night" : "day",
-        });
+      const { data, error } = await supabase.rpc("generate_shifts_for_date", { _date: dateStr });
+      if (error) {
+        if (!firstError) firstError = error.message;
+        continue;
       }
+      totalCreated += Number(data ?? 0);
     }
-
-    if (!inserts.length) {
-      toast.info("As regras dos contratos não geraram plantões para os próximos 7 dias.");
-      return;
-    }
-
-    const { error, data } = await supabase.from("demands").insert(inserts).select("id");
-    if (error) return toast.error(error.message);
-
-    if (data?.length) {
-      const offers = data.map((d, i) => ({
-        demand_id: d.id,
-        slots_total: inserts[i].slots_required,
-      }));
-      await supabase.from("shift_offers").insert(offers);
-    }
-
-    toast.success(`${inserts.length} plantões gerados.`);
+    if (firstError) toast.error(firstError);
+    if (totalCreated > 0) toast.success(`${totalCreated} plantões gerados.`);
+    else if (!firstError) toast.info("Nada a gerar para os próximos 7 dias.");
     load();
   };
 
