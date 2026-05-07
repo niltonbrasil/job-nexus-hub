@@ -358,7 +358,44 @@ function Schedule() {
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+            {selected.plan_snapshot && Object.keys(selected.plan_snapshot).length > 0 && (
+              <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+                <p className="mb-2 font-semibold uppercase tracking-wider text-muted-foreground">
+                  Política aplicada
+                </p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
+                  {Object.entries(selected.plan_snapshot as Record<string, unknown>).map(([k, v]) => (
+                    <div key={k} className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">{k}</span>
+                      <span>{String(v)}</span>
+                    </div>
+                  ))}
+                </div>
+                {selected.block_index > 0 && (
+                  <p className="mt-2 text-muted-foreground">Bloco #{selected.block_index + 1}</p>
+                )}
+              </div>
+            )}
+
+            {offers.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Ondas de distribuição
+                </p>
+                {offers.map((o) => (
+                  <div key={o.id} className="grid grid-cols-4 items-center gap-2 rounded-lg bg-secondary/40 px-3 py-2 text-xs">
+                    <span className="font-semibold">Wave {o.wave}</span>
+                    <span className="text-muted-foreground">{o.eligible_teams.length ? o.eligible_teams.join(", ") : "todos"}</span>
+                    <span className="font-mono">{o.slots_filled}/{o.slots_total}</span>
+                    <span className="text-muted-foreground">
+                      {new Date(o.opens_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+
               <Button variant="hero" className="flex-1" onClick={reinforceOffer}>
                 <Megaphone className="h-4 w-4" /> Reforçar oferta
               </Button>
