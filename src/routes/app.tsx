@@ -257,13 +257,13 @@ function WorkerApp() {
           <div className="space-y-4">
             <h2 className="font-display text-2xl font-bold tracking-tight">Bom trabalho hoje.</h2>
             <p className="text-sm text-muted-foreground">
-              {offers.length} oportunidades disponíveis para você agora.
+              {filteredOffers.length} oportunidades disponíveis para você agora.
             </p>
 
             <div className="grid grid-cols-3 gap-3">
               {(["chat", "voice", "visit"] as const).map((k) => {
                 const Icon = ICONS[k];
-                const count = offers.filter((o) => o.demands?.job_type === k).length;
+                const count = filteredOffers.filter((o) => o.demands?.job_type === k).length;
                 return (
                   <button
                     key={k}
@@ -334,7 +334,7 @@ function WorkerApp() {
 
         {tab === "ops" && (
           <div className="space-y-3">
-            {offers.length === 0 ? (
+            {filteredOffers.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
                 <Clock className="mx-auto h-8 w-8 text-muted-foreground" />
                 <p className="mt-3 font-display font-semibold">Nenhuma oportunidade aberta</p>
@@ -343,7 +343,7 @@ function WorkerApp() {
                 </p>
               </div>
             ) : (
-              offers.map((o) => {
+              filteredOffers.map((o) => {
                 const d = o.demands;
                 if (!d) return null;
                 const Icon = ICONS[d.job_type];
