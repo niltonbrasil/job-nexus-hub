@@ -42,6 +42,9 @@ function Contracts() {
   const [hoursPerDay, setHoursPerDay] = useState<"4" | "12" | "24">("12");
   const [minWorkers, setMinWorkers] = useState(1);
   const [price, setPrice] = useState(35);
+  const [weekend, setWeekend] = useState(true);
+  const [parity, setParity] = useState<"none" | "odd" | "even">("none");
+  const [nightShift, setNightShift] = useState(false);
 
   const load = async () => {
     if (!user) return;
