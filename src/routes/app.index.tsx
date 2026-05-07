@@ -20,7 +20,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-export const Route = createFileRoute("/app")({
+export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Hub Profissional — Umbrella" }] }),
   component: WorkerApp,
 });

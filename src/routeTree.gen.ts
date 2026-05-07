@@ -16,6 +16,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as CompanyRouteImport } from './routes/_company'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppMembershipsRouteImport } from './routes/app_.memberships'
 import { Route as CompanyScheduleRouteImport } from './routes/_company/schedule'
 import { Route as CompanyProfessionalsRouteImport } from './routes/_company/professionals'
@@ -62,6 +63,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppMembershipsRoute = AppMembershipsRouteImport.update({
   id: '/app_/memberships',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/professionals': typeof CompanyProfessionalsRoute
   '/schedule': typeof CompanyScheduleRoute
   '/app/memberships': typeof AppMembershipsRoute
+  '/app/': typeof AppIndexRoute
   '/app/execution/$id': typeof AppExecutionIdRoute
   '/app/profile/operations': typeof AppProfileOperationsRoute
   '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
@@ -148,7 +155,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -161,6 +167,7 @@ export interface FileRoutesByTo {
   '/professionals': typeof CompanyProfessionalsRoute
   '/schedule': typeof CompanyScheduleRoute
   '/app/memberships': typeof AppMembershipsRoute
+  '/app': typeof AppIndexRoute
   '/app/execution/$id': typeof AppExecutionIdRoute
   '/app/profile/operations': typeof AppProfileOperationsRoute
   '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
@@ -183,6 +190,7 @@ export interface FileRoutesById {
   '/_company/professionals': typeof CompanyProfessionalsRoute
   '/_company/schedule': typeof CompanyScheduleRoute
   '/app_/memberships': typeof AppMembershipsRoute
+  '/app/': typeof AppIndexRoute
   '/app/execution/$id': typeof AppExecutionIdRoute
   '/app_/profile/operations': typeof AppProfileOperationsRoute
   '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
@@ -205,6 +213,7 @@ export interface FileRouteTypes {
     | '/professionals'
     | '/schedule'
     | '/app/memberships'
+    | '/app/'
     | '/app/execution/$id'
     | '/app/profile/operations'
     | '/api/public/cron/generate-shifts'
@@ -212,7 +221,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app'
     | '/forgot-password'
     | '/login'
     | '/reset-password'
@@ -225,6 +233,7 @@ export interface FileRouteTypes {
     | '/professionals'
     | '/schedule'
     | '/app/memberships'
+    | '/app'
     | '/app/execution/$id'
     | '/app/profile/operations'
     | '/api/public/cron/generate-shifts'
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/_company/professionals'
     | '/_company/schedule'
     | '/app_/memberships'
+    | '/app/'
     | '/app/execution/$id'
     | '/app_/profile/operations'
     | '/api/public/cron/generate-shifts'
@@ -316,6 +326,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app_/memberships': {
       id: '/app_/memberships'
@@ -428,10 +445,12 @@ const CompanyRouteWithChildren =
   CompanyRoute._addFileChildren(CompanyRouteChildren)
 
 interface AppRouteChildren {
+  AppIndexRoute: typeof AppIndexRoute
   AppExecutionIdRoute: typeof AppExecutionIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppIndexRoute: AppIndexRoute,
   AppExecutionIdRoute: AppExecutionIdRoute,
 }
 
@@ -453,3 +472,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
