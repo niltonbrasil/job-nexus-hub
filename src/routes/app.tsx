@@ -66,6 +66,15 @@ function WorkerApp() {
   const [tab, setTab] = useState<"hub" | "ops" | "earn">("hub");
   const [online, setOnline] = useState(true);
   const [workerId, setWorkerId] = useState<string | null>(null);
+  const [workerProfile, setWorkerProfile] = useState<{
+    accepts_weekdays: boolean;
+    accepts_weekends: boolean;
+    weekends_only: boolean;
+    parity_scope: "odd" | "even" | "any";
+    crew_role: "line" | "reserve";
+    line_parity_preference: "odd" | "even" | "any";
+    weekend_offer_advance: boolean;
+  } | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [acceptances, setAcceptances] = useState<Acceptance[]>([]);
   const [reliability, setReliability] = useState(1);
@@ -80,9 +89,25 @@ function WorkerApp() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: w } = await supabase.from("workers").select("id").eq("user_id", user.id).maybeSingle();
-      if (!w) return;
+      const { data: w } = await supabase
+        .from("workers")
+        .select("id, operations_profile_completed, accepts_weekdays, accepts_weekends, weekends_only, parity_scope, crew_role, line_parity_preference, weekend_offer_advance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!w || !w.operations_profile_completed) {
+        navigate({ to: "/app/profile/operations" });
+        return;
+      }
       setWorkerId(w.id);
+      setWorkerProfile({
+        accepts_weekdays: w.accepts_weekdays,
+        accepts_weekends: w.accepts_weekends,
+        weekends_only: w.weekends_only,
+        parity_scope: w.parity_scope as "odd" | "even" | "any",
+        crew_role: w.crew_role as "line" | "reserve",
+        line_parity_preference: w.line_parity_preference as "odd" | "even" | "any",
+        weekend_offer_advance: w.weekend_offer_advance,
+      });
       const { data: m } = await supabase.from("worker_metrics").select("reliability_score").eq("worker_id", w.id).maybeSingle();
       if (m) setReliability(Number(m.reliability_score));
       load(w.id);
@@ -90,12 +115,13 @@ function WorkerApp() {
   }, [user]);
 
   const load = async (wid: string) => {
+    // TODO otimizar query: filtros aplicados client-side a partir do perfil operacional
     const { data: openOffers } = await supabase
       .from("shift_offers")
-      .select("id, slots_total, slots_filled, demand_id, demands(id, date, start_time, end_time, job_type, hours_required)")
+      .select("id, slots_total, slots_filled, demand_id, demands(id, date, start_time, end_time, job_type, hours_required, weekend)")
       .eq("status", "open")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
     setOffers((openOffers as Offer[]) ?? []);
 
     const { data: accs } = await supabase
