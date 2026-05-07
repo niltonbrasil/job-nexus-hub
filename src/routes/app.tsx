@@ -55,6 +55,7 @@ type Acceptance = {
       date: string;
       hours_required: number;
       contract_services: {
+        price_per_hour: number;
         contracts: { name: string; clients: { name: string } | null } | null;
       } | null;
     } | null;
