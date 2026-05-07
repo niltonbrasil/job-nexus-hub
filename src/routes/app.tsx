@@ -174,7 +174,12 @@ function WorkerApp() {
     );
   }
 
-  const earnings = acceptances.filter((a) => a.status === "accepted").reduce((s, a) => s + (a.shift_offers?.demands?.hours_required ?? 0) * 35, 0);
+  const earningsFor = (a: Acceptance) => {
+    const d = a.shift_offers?.demands;
+    const rate = Number(d?.contract_services?.price_per_hour ?? 0);
+    return (d?.hours_required ?? 0) * rate;
+  };
+  const earnings = acceptances.filter((a) => a.status === "accepted").reduce((s, a) => s + earningsFor(a), 0);
 
   // Filtros derivados do perfil operacional (TODO: otimizar como query Supabase).
   const filteredOffers = offers.filter((o) => {
