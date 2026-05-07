@@ -158,6 +158,21 @@ function Contracts() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label>Paciente</Label>
+                <select
+                  value={patientId}
+                  onChange={(e) => setPatientId(e.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">— sem paciente —</option>
+                  {patients.map((p) => (
+                    <option key={p.id} value={p.id}>{p.full_name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">Vincula o contrato ao paciente; ativa o bloqueio automático de conflito 12h.</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Plano</Label>
