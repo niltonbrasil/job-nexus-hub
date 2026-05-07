@@ -186,15 +186,21 @@ function WorkerApp() {
     setActiveExecs((execs as ActiveExec[]) ?? []);
   };
 
-  const accept = async (offer: Offer) => {
-    if (!workerId) return;
+  const confirmAcceptance = async () => {
+    if (!workerId || !confirmOffer) return;
+    setAccepting(true);
     const { error } = await supabase.from("shift_acceptances").insert({
-      offer_id: offer.id,
+      offer_id: confirmOffer.id,
       worker_id: workerId,
       source: "manual",
     });
-    if (error) return toast.error(error.message);
-    toast.success("Job aceito. Boa execução!");
+    setAccepting(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Promessa de atendimento confirmada.");
+    setConfirmOffer(null);
     load(workerId);
   };
 
