@@ -870,6 +870,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      worker_can_see_demand: {
+        Args: { _demand_id: string; _user_id: string }
+        Returns: boolean
+      }
+      worker_can_see_offer: {
+        Args: { _offer_id: string; _user_id: string }
+        Returns: boolean
+      }
       worker_checkin: { Args: { _execution_id: string }; Returns: undefined }
       worker_checkout: {
         Args: { _execution_id: string; _hours?: number; _proof?: Json }
