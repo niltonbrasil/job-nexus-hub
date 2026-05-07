@@ -138,7 +138,7 @@ function WorkerApp() {
 
     const { data: accs } = await supabase
       .from("shift_acceptances")
-      .select("id, accepted_at, status, shift_offers(demand_id, demands(job_type, date, hours_required, contract_services(contracts(name, clients(name)))))")
+      .select("id, accepted_at, status, shift_offers(demand_id, demands(job_type, date, hours_required, contract_services(price_per_hour, contracts(name, clients(name)))))")
       .eq("worker_id", wid)
       .order("accepted_at", { ascending: false })
       .limit(50);
