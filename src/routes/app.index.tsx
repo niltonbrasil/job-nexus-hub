@@ -49,6 +49,13 @@ type Offer = {
     job_type: "chat" | "voice" | "visit";
     hours_required: number;
     weekend: boolean;
+    patients: { full_name: string } | null;
+    contract_services: {
+      contracts: {
+        name: string;
+        clients: { name: string } | null;
+      } | null;
+    } | null;
   } | null;
 };
 
