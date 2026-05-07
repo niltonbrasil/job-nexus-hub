@@ -11,6 +11,8 @@ export const Route = createFileRoute("/_company/professionals")({
   component: Pros,
 });
 
+import { TEAM_LABEL, type Team } from "@/lib/distribution";
+
 type Worker = {
   id: string;
   name: string;
@@ -18,6 +20,7 @@ type Worker = {
   phone: string | null;
   status: string;
   type: string;
+  team: Team | null;
 };
 
 type Metric = {
@@ -46,9 +49,9 @@ function Pros() {
   const reload = async () => {
     const { data } = await supabase
       .from("workers")
-      .select("id, name, email, phone, status, type")
+      .select("id, name, email, phone, status, type, team")
       .order("name");
-    setWorkers(data ?? []);
+    setWorkers((data as Worker[]) ?? []);
     const ids = (data ?? []).map((w) => w.id);
     if (ids.length) {
       const { data: m } = await supabase
