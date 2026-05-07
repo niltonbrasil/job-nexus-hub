@@ -445,7 +445,7 @@ function WorkerApp() {
                         </p>
                       </div>
                       <span className="font-mono text-sm font-semibold text-accent">
-                        R$ {(d.hours_required * 35).toFixed(2)}
+                        R$ {earningsFor(a).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   );
