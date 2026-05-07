@@ -21,7 +21,7 @@ import { Route as CompanyProfessionalsRouteImport } from './routes/_company/prof
 import { Route as CompanyDashboardRouteImport } from './routes/_company/dashboard'
 import { Route as CompanyContractsRouteImport } from './routes/_company/contracts'
 import { Route as CompanyBillingRouteImport } from './routes/_company/billing'
-import { Route as AppProfileOperationsRouteImport } from './routes/app_.profile.operations'
+import { Route as AppProfileOperationsRouteImport } from './routes/app.profile.operations'
 import { Route as AppExecutionIdRouteImport } from './routes/app.execution.$id'
 import { Route as ApiPublicCronMonthlyBillingRouteImport } from './routes/api/public/cron/monthly-billing'
 import { Route as ApiPublicCronGenerateShiftsRouteImport } from './routes/api/public/cron/generate-shifts'
@@ -86,9 +86,9 @@ const CompanyBillingRoute = CompanyBillingRouteImport.update({
   getParentRoute: () => CompanyRoute,
 } as any)
 const AppProfileOperationsRoute = AppProfileOperationsRouteImport.update({
-  id: '/app_/profile/operations',
-  path: '/app/profile/operations',
-  getParentRoute: () => rootRouteImport,
+  id: '/profile/operations',
+  path: '/profile/operations',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppExecutionIdRoute = AppExecutionIdRouteImport.update({
   id: '/execution/$id',
@@ -157,7 +157,7 @@ export interface FileRoutesById {
   '/_company/professionals': typeof CompanyProfessionalsRoute
   '/_company/schedule': typeof CompanyScheduleRoute
   '/app/execution/$id': typeof AppExecutionIdRoute
-  '/app_/profile/operations': typeof AppProfileOperationsRoute
+  '/app/profile/operations': typeof AppProfileOperationsRoute
   '/api/public/cron/generate-shifts': typeof ApiPublicCronGenerateShiftsRoute
   '/api/public/cron/monthly-billing': typeof ApiPublicCronMonthlyBillingRoute
 }
@@ -211,7 +211,7 @@ export interface FileRouteTypes {
     | '/_company/professionals'
     | '/_company/schedule'
     | '/app/execution/$id'
-    | '/app_/profile/operations'
+    | '/app/profile/operations'
     | '/api/public/cron/generate-shifts'
     | '/api/public/cron/monthly-billing'
   fileRoutesById: FileRoutesById
@@ -224,7 +224,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
-  AppProfileOperationsRoute: typeof AppProfileOperationsRoute
   ApiPublicCronGenerateShiftsRoute: typeof ApiPublicCronGenerateShiftsRoute
   ApiPublicCronMonthlyBillingRoute: typeof ApiPublicCronMonthlyBillingRoute
 }
@@ -315,12 +314,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompanyBillingRouteImport
       parentRoute: typeof CompanyRoute
     }
-    '/app_/profile/operations': {
-      id: '/app_/profile/operations'
-      path: '/app/profile/operations'
+    '/app/profile/operations': {
+      id: '/app/profile/operations'
+      path: '/profile/operations'
       fullPath: '/app/profile/operations'
       preLoaderRoute: typeof AppProfileOperationsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/execution/$id': {
       id: '/app/execution/$id'
@@ -367,10 +366,12 @@ const CompanyRouteWithChildren =
 
 interface AppRouteChildren {
   AppExecutionIdRoute: typeof AppExecutionIdRoute
+  AppProfileOperationsRoute: typeof AppProfileOperationsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppExecutionIdRoute: AppExecutionIdRoute,
+  AppProfileOperationsRoute: AppProfileOperationsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -383,10 +384,18 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
-  AppProfileOperationsRoute: AppProfileOperationsRoute,
   ApiPublicCronGenerateShiftsRoute: ApiPublicCronGenerateShiftsRoute,
   ApiPublicCronMonthlyBillingRoute: ApiPublicCronMonthlyBillingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
