@@ -127,7 +127,7 @@ function CredentialsPage() {
   };
 
   const availableWorkers = workers.filter(
-    (w) => !memberships.some((m) => m.worker_id === w.id && m.status !== "revoked" && m.status !== "rejected")
+    (w) => !memberships.some((m) => m.worker_id === w.id && m.status !== "revoked" && m.status !== "revoked")
   );
 
   return (
@@ -222,7 +222,7 @@ function CredentialsPage() {
                       </Button>
                     )}
                     {m.status === "requested" && (
-                      <Button size="sm" variant="outline" onClick={() => updateStatus(m, "rejected")}>
+                      <Button size="sm" variant="outline" onClick={() => updateStatus(m, "revoked")}>
                         <X className="h-3.5 w-3.5" /> Recusar
                       </Button>
                     )}
@@ -236,7 +236,7 @@ function CredentialsPage() {
                         <Ban className="h-3.5 w-3.5" /> Revogar
                       </Button>
                     )}
-                    {(m.status === "revoked" || m.status === "rejected") && (
+                    {(m.status === "revoked") && (
                       <Button size="sm" variant="outline" onClick={() => updateStatus(m, "invited")}>
                         Reconvidar
                       </Button>
