@@ -137,6 +137,76 @@ export type Database = {
         }
         Relationships: []
       }
+      company_worker_memberships: {
+        Row: {
+          certification_doc_url: string | null
+          certification_valid_until: string | null
+          client_id: string
+          created_at: string
+          id: string
+          invited_at: string
+          invited_by: string | null
+          notes: string | null
+          profession_id: string | null
+          responded_at: string | null
+          status: Database["public"]["Enums"]["membership_status"]
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          certification_doc_url?: string | null
+          certification_valid_until?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          notes?: string | null
+          profession_id?: string | null
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["membership_status"]
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          certification_doc_url?: string | null
+          certification_valid_until?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          notes?: string | null
+          profession_id?: string | null
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["membership_status"]
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_worker_memberships_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_worker_memberships_profession_id_fkey"
+            columns: ["profession_id"]
+            isOneToOne: false
+            referencedRelation: "professions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_worker_memberships_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_services: {
         Row: {
           contract_id: string
@@ -271,12 +341,14 @@ export type Database = {
           block_index: number
           contract_service_id: string
           created_at: string
+          crew_size: number
           date: string
           end_time: string
           hours_required: number
           id: string
           job_type: Database["public"]["Enums"]["service_type"]
           parity_type: Database["public"]["Enums"]["parity_type"]
+          patient_id: string | null
           plan_snapshot: Json
           priority: Database["public"]["Enums"]["priority_level"]
           shift_type: Database["public"]["Enums"]["shift_type"]
@@ -289,12 +361,14 @@ export type Database = {
           block_index?: number
           contract_service_id: string
           created_at?: string
+          crew_size?: number
           date: string
           end_time: string
           hours_required?: number
           id?: string
           job_type: Database["public"]["Enums"]["service_type"]
           parity_type?: Database["public"]["Enums"]["parity_type"]
+          patient_id?: string | null
           plan_snapshot?: Json
           priority?: Database["public"]["Enums"]["priority_level"]
           shift_type?: Database["public"]["Enums"]["shift_type"]
@@ -307,12 +381,14 @@ export type Database = {
           block_index?: number
           contract_service_id?: string
           created_at?: string
+          crew_size?: number
           date?: string
           end_time?: string
           hours_required?: number
           id?: string
           job_type?: Database["public"]["Enums"]["service_type"]
           parity_type?: Database["public"]["Enums"]["parity_type"]
+          patient_id?: string | null
           plan_snapshot?: Json
           priority?: Database["public"]["Enums"]["priority_level"]
           shift_type?: Database["public"]["Enums"]["shift_type"]
@@ -327,6 +403,13 @@ export type Database = {
             columns: ["contract_service_id"]
             isOneToOne: false
             referencedRelation: "contract_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demands_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]
@@ -363,6 +446,71 @@ export type Database = {
           },
         ]
       }
+      patients: {
+        Row: {
+          birth_date: string | null
+          client_id: string
+          cpf: string | null
+          created_at: string
+          full_name: string
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          birth_date?: string | null
+          client_id: string
+          cpf?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string | null
+          client_id?: string
+          cpf?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professions: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -394,6 +542,7 @@ export type Database = {
         Row: {
           accepted_at: string
           created_at: string
+          crew_role: Database["public"]["Enums"]["crew_role"] | null
           id: string
           offer_id: string
           source: Database["public"]["Enums"]["acceptance_source"]
@@ -403,6 +552,7 @@ export type Database = {
         Insert: {
           accepted_at?: string
           created_at?: string
+          crew_role?: Database["public"]["Enums"]["crew_role"] | null
           id?: string
           offer_id: string
           source?: Database["public"]["Enums"]["acceptance_source"]
@@ -412,6 +562,7 @@ export type Database = {
         Update: {
           accepted_at?: string
           created_at?: string
+          crew_role?: Database["public"]["Enums"]["crew_role"] | null
           id?: string
           offer_id?: string
           source?: Database["public"]["Enums"]["acceptance_source"]
@@ -732,6 +883,7 @@ export type Database = {
       billing_cycle: "monthly" | "weekly"
       billing_status: "open" | "closed" | "paid"
       contract_status: "active" | "paused" | "cancelled"
+      crew_role: "linha_impar" | "linha_par" | "folguista_1" | "folguista_2"
       demand_status:
         | "open"
         | "partially_filled"
@@ -744,6 +896,7 @@ export type Database = {
         | "completed"
         | "no_show"
         | "cancelled"
+      membership_status: "invited" | "requested" | "active" | "revoked"
       offer_status: "open" | "closed" | "filled" | "cancelled"
       parity_type: "odd" | "even" | "none"
       priority_level: "low" | "normal" | "high"
@@ -885,6 +1038,7 @@ export const Constants = {
       billing_cycle: ["monthly", "weekly"],
       billing_status: ["open", "closed", "paid"],
       contract_status: ["active", "paused", "cancelled"],
+      crew_role: ["linha_impar", "linha_par", "folguista_1", "folguista_2"],
       demand_status: [
         "open",
         "partially_filled",
@@ -899,6 +1053,7 @@ export const Constants = {
         "no_show",
         "cancelled",
       ],
+      membership_status: ["invited", "requested", "active", "revoked"],
       offer_status: ["open", "closed", "filled", "cancelled"],
       parity_type: ["odd", "even", "none"],
       priority_level: ["low", "normal", "high"],
