@@ -37,6 +37,8 @@ type Demand = {
   status: keyof typeof STATUS_COLORS;
   contract_service_id: string;
   priority: string;
+  block_index: number;
+  plan_snapshot: Record<string, unknown> | null;
 };
 
 type OfferDetail = {
@@ -44,6 +46,9 @@ type OfferDetail = {
   slots_total: number;
   slots_filled: number;
   status: string;
+  wave: number;
+  eligible_teams: string[];
+  opens_at: string;
 };
 
 function Schedule() {
@@ -66,7 +71,7 @@ function Schedule() {
     if (!sIds.length) return setDemands([]);
     const { data } = await supabase
       .from("demands")
-      .select("id, date, start_time, end_time, job_type, slots_required, status, contract_service_id, priority")
+      .select("id, date, start_time, end_time, job_type, slots_required, status, contract_service_id, priority, block_index, plan_snapshot")
       .in("contract_service_id", sIds)
       .order("date", { ascending: true });
     setDemands((data as Demand[]) ?? []);
@@ -161,14 +166,17 @@ function Schedule() {
     load();
   };
 
+  const [offers, setOffers] = useState<OfferDetail[]>([]);
   const openDetail = async (d: Demand) => {
     setSelected(d);
     const { data } = await supabase
       .from("shift_offers")
-      .select("id, slots_total, slots_filled, status")
+      .select("id, slots_total, slots_filled, status, wave, eligible_teams, opens_at")
       .eq("demand_id", d.id)
-      .maybeSingle();
-    setOffer((data as OfferDetail) ?? null);
+      .order("wave");
+    const list = (data as OfferDetail[]) ?? [];
+    setOffers(list);
+    setOffer(list[0] ?? null);
   };
 
   const reinforceOffer = async () => {
@@ -349,6 +357,43 @@ function Schedule() {
                 <p className="mt-1 font-display text-xl font-bold capitalize">{selected.priority}</p>
               </div>
             </div>
+
+            {selected.plan_snapshot && Object.keys(selected.plan_snapshot).length > 0 && (
+              <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-3 text-xs">
+                <p className="mb-2 font-semibold uppercase tracking-wider text-muted-foreground">
+                  Política aplicada
+                </p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
+                  {Object.entries(selected.plan_snapshot as Record<string, unknown>).map(([k, v]) => (
+                    <div key={k} className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">{k}</span>
+                      <span>{String(v)}</span>
+                    </div>
+                  ))}
+                </div>
+                {selected.block_index > 0 && (
+                  <p className="mt-2 text-muted-foreground">Bloco #{selected.block_index + 1}</p>
+                )}
+              </div>
+            )}
+
+            {offers.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Ondas de distribuição
+                </p>
+                {offers.map((o) => (
+                  <div key={o.id} className="grid grid-cols-4 items-center gap-2 rounded-lg bg-secondary/40 px-3 py-2 text-xs">
+                    <span className="font-semibold">Wave {o.wave}</span>
+                    <span className="text-muted-foreground">{o.eligible_teams.length ? o.eligible_teams.join(", ") : "todos"}</span>
+                    <span className="font-mono">{o.slots_filled}/{o.slots_total}</span>
+                    <span className="text-muted-foreground">
+                      {new Date(o.opens_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <Button variant="hero" className="flex-1" onClick={reinforceOffer}>

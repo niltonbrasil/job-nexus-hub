@@ -141,9 +141,13 @@ export type Database = {
         Row: {
           contract_id: string
           created_at: string
+          credits_days: number
           hours_per_day: number
           id: string
           min_workers: number
+          padding_days: number
+          personalization: Json
+          plan_level: string
           price_per_hour: number
           rules: Json
           service_type: Database["public"]["Enums"]["service_type"]
@@ -151,9 +155,13 @@ export type Database = {
         Insert: {
           contract_id: string
           created_at?: string
+          credits_days?: number
           hours_per_day?: number
           id?: string
           min_workers?: number
+          padding_days?: number
+          personalization?: Json
+          plan_level?: string
           price_per_hour?: number
           rules?: Json
           service_type: Database["public"]["Enums"]["service_type"]
@@ -161,9 +169,13 @@ export type Database = {
         Update: {
           contract_id?: string
           created_at?: string
+          credits_days?: number
           hours_per_day?: number
           id?: string
           min_workers?: number
+          padding_days?: number
+          personalization?: Json
+          plan_level?: string
           price_per_hour?: number
           rules?: Json
           service_type?: Database["public"]["Enums"]["service_type"]
@@ -256,6 +268,7 @@ export type Database = {
       }
       demands: {
         Row: {
+          block_index: number
           contract_service_id: string
           created_at: string
           date: string
@@ -264,6 +277,7 @@ export type Database = {
           id: string
           job_type: Database["public"]["Enums"]["service_type"]
           parity_type: Database["public"]["Enums"]["parity_type"]
+          plan_snapshot: Json
           priority: Database["public"]["Enums"]["priority_level"]
           shift_type: Database["public"]["Enums"]["shift_type"]
           slots_required: number
@@ -272,6 +286,7 @@ export type Database = {
           weekend: boolean
         }
         Insert: {
+          block_index?: number
           contract_service_id: string
           created_at?: string
           date: string
@@ -280,6 +295,7 @@ export type Database = {
           id?: string
           job_type: Database["public"]["Enums"]["service_type"]
           parity_type?: Database["public"]["Enums"]["parity_type"]
+          plan_snapshot?: Json
           priority?: Database["public"]["Enums"]["priority_level"]
           shift_type?: Database["public"]["Enums"]["shift_type"]
           slots_required?: number
@@ -288,6 +304,7 @@ export type Database = {
           weekend?: boolean
         }
         Update: {
+          block_index?: number
           contract_service_id?: string
           created_at?: string
           date?: string
@@ -296,6 +313,7 @@ export type Database = {
           id?: string
           job_type?: Database["public"]["Enums"]["service_type"]
           parity_type?: Database["public"]["Enums"]["parity_type"]
+          plan_snapshot?: Json
           priority?: Database["public"]["Enums"]["priority_level"]
           shift_type?: Database["public"]["Enums"]["shift_type"]
           slots_required?: number
@@ -481,29 +499,38 @@ export type Database = {
         Row: {
           created_at: string
           demand_id: string
+          eligible_teams: string[]
           id: string
+          opens_at: string
           slots_filled: number
           slots_total: number
           status: Database["public"]["Enums"]["offer_status"]
           visibility_rule: Json
+          wave: number
         }
         Insert: {
           created_at?: string
           demand_id: string
+          eligible_teams?: string[]
           id?: string
+          opens_at?: string
           slots_filled?: number
           slots_total?: number
           status?: Database["public"]["Enums"]["offer_status"]
           visibility_rule?: Json
+          wave?: number
         }
         Update: {
           created_at?: string
           demand_id?: string
+          eligible_teams?: string[]
           id?: string
+          opens_at?: string
           slots_filled?: number
           slots_total?: number
           status?: Database["public"]["Enums"]["offer_status"]
           visibility_rule?: Json
+          wave?: number
         }
         Relationships: [
           {
@@ -608,6 +635,7 @@ export type Database = {
           name: string
           phone: string | null
           status: Database["public"]["Enums"]["worker_status"]
+          team: string | null
           type: Database["public"]["Enums"]["worker_type"]
           user_id: string
         }
@@ -618,6 +646,7 @@ export type Database = {
           name: string
           phone?: string | null
           status?: Database["public"]["Enums"]["worker_status"]
+          team?: string | null
           type?: Database["public"]["Enums"]["worker_type"]
           user_id: string
         }
@@ -628,6 +657,7 @@ export type Database = {
           name?: string
           phone?: string | null
           status?: Database["public"]["Enums"]["worker_status"]
+          team?: string | null
           type?: Database["public"]["Enums"]["worker_type"]
           user_id?: string
         }

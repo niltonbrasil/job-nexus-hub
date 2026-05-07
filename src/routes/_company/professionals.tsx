@@ -11,6 +11,8 @@ export const Route = createFileRoute("/_company/professionals")({
   component: Pros,
 });
 
+import { TEAM_LABEL, type Team } from "@/lib/distribution";
+
 type Worker = {
   id: string;
   name: string;
@@ -18,6 +20,7 @@ type Worker = {
   phone: string | null;
   status: string;
   type: string;
+  team: Team | null;
 };
 
 type Metric = {
@@ -46,9 +49,9 @@ function Pros() {
   const reload = async () => {
     const { data } = await supabase
       .from("workers")
-      .select("id, name, email, phone, status, type")
+      .select("id, name, email, phone, status, type, team")
       .order("name");
-    setWorkers(data ?? []);
+    setWorkers((data as Worker[]) ?? []);
     const ids = (data ?? []).map((w) => w.id);
     if (ids.length) {
       const { data: m } = await supabase
@@ -84,6 +87,15 @@ function Pros() {
     if (error) return toast.error(error.message);
     toast.success(next === "inactive" ? "Profissional restrito." : "Profissional reativado.");
     setSelected({ ...selected, status: next });
+    reload();
+  };
+
+  const setTeam = async (team: Team | null) => {
+    if (!selected) return;
+    const { error } = await supabase.from("workers").update({ team }).eq("id", selected.id);
+    if (error) return toast.error(error.message);
+    toast.success("Equipe atualizada.");
+    setSelected({ ...selected, team });
     reload();
   };
 
@@ -289,6 +301,20 @@ function Pros() {
                   ))}
                 </div>
               )}
+            </div>
+
+            <div className="mt-5 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Equipe</p>
+              <select
+                value={selected.team ?? ""}
+                onChange={(e) => setTeam((e.target.value || null) as Team | null)}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="">Sem equipe</option>
+                {(Object.keys(TEAM_LABEL) as Team[]).map((t) => (
+                  <option key={t} value={t}>{TEAM_LABEL[t]}</option>
+                ))}
+              </select>
             </div>
 
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
