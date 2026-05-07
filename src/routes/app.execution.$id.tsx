@@ -403,8 +403,14 @@ function ExecutionMode() {
       {exec.status !== "completed" && (
         <footer className="border-t border-border bg-card p-4">
           {exec.status === "scheduled" ? (
-            <Button variant="hero" size="lg" className="w-full" onClick={checkin}>
-              Fazer check-in
+            <Button
+              variant="hero"
+              size="lg"
+              className="w-full"
+              onClick={checkin}
+              disabled={jobType === "visit" && !coords}
+            >
+              {jobType === "visit" && !coords ? "Aguardando GPS para check-in" : "Fazer check-in"}
             </Button>
           ) : (
             <Button
