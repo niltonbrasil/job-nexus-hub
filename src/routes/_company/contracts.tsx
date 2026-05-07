@@ -44,6 +44,8 @@ function Contracts() {
   const [serviceType, setServiceType] = useState<"chat" | "voice" | "visit">("chat");
   const [price, setPrice] = useState(35);
   const [weekend, setWeekend] = useState(true);
+  const [patientId, setPatientId] = useState<string>("");
+  const [patients, setPatients] = useState<{ id: string; full_name: string }[]>([]);
   const cfg = PLAN_CONFIG[planLevel];
 
   const load = async () => {
@@ -51,6 +53,12 @@ function Contracts() {
     const { data: clients } = await supabase.from("clients").select("id");
     const ids = (clients ?? []).map((c) => c.id);
     if (!ids.length) return;
+    const { data: pts } = await supabase
+      .from("patients")
+      .select("id, full_name")
+      .in("client_id", ids)
+      .order("full_name");
+    setPatients(pts ?? []);
     const { data } = await supabase
       .from("contracts")
       .select("id, name, start_date, end_date, status, contract_services(id, service_type, hours_per_day, min_workers, price_per_hour)")
