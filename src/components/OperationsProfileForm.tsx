@@ -103,10 +103,19 @@ export function OperationsProfileForm({
     setSaving(true);
     // Folguista: paridade não se aplica — força 'any' para evitar inconsistência.
     const parityScope = v.crew_role === "reserve" ? "any" : v.parity_scope;
+    // Deriva equipe a partir do papel + paridade. 'any' = sem equipe fixa (elegível a ambas).
+    const teamPrefix = v.crew_role === "reserve" ? "folguista" : "start";
+    const team =
+      parityScope === "odd"
+        ? `${teamPrefix}_impar`
+        : parityScope === "even"
+          ? `${teamPrefix}_par`
+          : null;
     const payload = {
       ...v,
       parity_scope: parityScope,
       line_parity_preference: parityScope, // mantém em sync, evita confusão
+      team,
       operations_profile_completed: true,
     };
     const { error } = await supabase.from("workers").update(payload).eq("id", workerId);
