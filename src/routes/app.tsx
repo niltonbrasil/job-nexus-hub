@@ -40,6 +40,7 @@ type Offer = {
     end_time: string;
     job_type: "chat" | "voice" | "visit";
     hours_required: number;
+    weekend: boolean;
   } | null;
 };
 
