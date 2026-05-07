@@ -11,6 +11,8 @@ import {
   Receipt,
   LogOut,
   Loader2,
+  HeartPulse,
+  ShieldCheck,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_company")({
@@ -21,6 +23,8 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/contracts", label: "Contratos", icon: FileText },
   { to: "/schedule", label: "Agenda", icon: Calendar },
+  { to: "/patients", label: "Pacientes", icon: HeartPulse },
+  { to: "/credentials", label: "Credenciados", icon: ShieldCheck },
   { to: "/professionals", label: "Profissionais", icon: Users },
   { to: "/billing", label: "Faturamento", icon: Receipt },
 ] as const;
