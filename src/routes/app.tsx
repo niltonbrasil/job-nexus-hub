@@ -55,6 +55,7 @@ type Acceptance = {
       date: string;
       hours_required: number;
       contract_services: {
+        price_per_hour: number;
         contracts: { name: string; clients: { name: string } | null } | null;
       } | null;
     } | null;
@@ -137,7 +138,7 @@ function WorkerApp() {
 
     const { data: accs } = await supabase
       .from("shift_acceptances")
-      .select("id, accepted_at, status, shift_offers(demand_id, demands(job_type, date, hours_required, contract_services(contracts(name, clients(name)))))")
+      .select("id, accepted_at, status, shift_offers(demand_id, demands(job_type, date, hours_required, contract_services(price_per_hour, contracts(name, clients(name)))))")
       .eq("worker_id", wid)
       .order("accepted_at", { ascending: false })
       .limit(50);
@@ -173,7 +174,12 @@ function WorkerApp() {
     );
   }
 
-  const earnings = acceptances.filter((a) => a.status === "accepted").reduce((s, a) => s + (a.shift_offers?.demands?.hours_required ?? 0) * 35, 0);
+  const earningsFor = (a: Acceptance) => {
+    const d = a.shift_offers?.demands;
+    const rate = Number(d?.contract_services?.price_per_hour ?? 0);
+    return (d?.hours_required ?? 0) * rate;
+  };
+  const earnings = acceptances.filter((a) => a.status === "accepted").reduce((s, a) => s + earningsFor(a), 0);
 
   // Filtros derivados do perfil operacional (TODO: otimizar como query Supabase).
   const filteredOffers = offers.filter((o) => {
@@ -439,7 +445,7 @@ function WorkerApp() {
                         </p>
                       </div>
                       <span className="font-mono text-sm font-semibold text-accent">
-                        R$ {(d.hours_required * 35).toFixed(2)}
+                        R$ {earningsFor(a).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   );
