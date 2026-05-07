@@ -48,7 +48,17 @@ type Acceptance = {
   id: string;
   accepted_at: string;
   status: string;
-  shift_offers: { demand_id: string; demands: { job_type: string; date: string; hours_required: number } | null } | null;
+  shift_offers: {
+    demand_id: string;
+    demands: {
+      job_type: string;
+      date: string;
+      hours_required: number;
+      contract_services: {
+        contracts: { name: string; clients: { name: string } | null } | null;
+      } | null;
+    } | null;
+  } | null;
 };
 
 type ActiveExec = {
