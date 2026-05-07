@@ -115,6 +115,7 @@ function Contracts() {
         blocks: cfg.blocks,
       },
       rules: { weekend, night_shift: cfg.hours_per_day >= 12 },
+      patient_id: patientId || null,
     });
     if (svcErr) {
       toast.error(svcErr.message);
