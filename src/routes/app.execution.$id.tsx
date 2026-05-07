@@ -264,42 +264,125 @@ function ExecutionMode() {
           <div className="flex flex-1 flex-col gap-4 p-5">
             <div className="rounded-2xl border border-border bg-card-elevated p-5">
               <div className="flex items-center gap-3">
+                <MapPin className="h-5 w-5 text-accent" />
+                <p className="font-semibold">Endereço da visita</p>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{VISIT_ADDRESS_PLACEHOLDER}</p>
+              <a
+                href={mapHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground"
+              >
+                <ExternalLink className="h-3.5 w-3.5" /> Abrir no mapa
+              </a>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <div className="flex items-center gap-3">
                 <Navigation className="h-5 w-5 text-accent" />
-                <p className="font-semibold">Localização ao vivo</p>
+                <p className="font-semibold">GPS</p>
               </div>
               {coords ? (
-                <p className="mt-2 font-mono text-xs text-muted-foreground">
+                <p className="mt-2 font-mono text-xs text-success">
                   {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
                 </p>
               ) : (
                 <p className="mt-2 text-xs text-muted-foreground">Aguardando GPS…</p>
               )}
             </div>
-            <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-              <MapPin className="mx-auto h-8 w-8 text-muted-foreground" />
-              <p className="mt-2">Suas coordenadas serão registradas como prova de visita no checkout.</p>
+
+            <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+              <p className="font-semibold text-sm">Checklist da visita</p>
+              {(
+                [
+                  ["arrived", "Cheguei ao local"],
+                  ["contacted", "Contato com responsável"],
+                ] as const
+              ).map(([k, label]) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setVisitChecks((s) => ({ ...s, [k]: !s[k] }))}
+                  className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-left text-sm"
+                >
+                  <span>{label}</span>
+                  <span
+                    className={`flex h-5 w-5 items-center justify-center rounded-md border ${
+                      visitChecks[k]
+                        ? "border-success bg-success text-white"
+                        : "border-border"
+                    }`}
+                  >
+                    {visitChecks[k] && <Check className="h-3.5 w-3.5" />}
+                  </span>
+                </button>
+              ))}
+              <textarea
+                value={visitNotes}
+                onChange={(e) => setVisitNotes(e.target.value)}
+                placeholder="Observações (opcional)"
+                rows={3}
+                className="w-full resize-none rounded-lg border border-border bg-background p-2 text-sm outline-none focus:border-accent"
+              />
             </div>
           </div>
         )}
 
         {/* PRE-CHECKIN */}
         {exec.status === "scheduled" && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-6 p-8 text-center">
-            <Clock className="h-16 w-16 text-muted-foreground" />
-            <div>
-              <h2 className="font-display text-2xl font-bold">Pronto para começar?</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {jobType === "chat" && "Você atenderá clientes via chat."}
-                {jobType === "voice" && "Você atenderá ligações."}
-                {jobType === "visit" && "Faça check-in no local da visita."}
-              </p>
-              {jobType === "visit" && coords && (
-                <p className="mt-3 font-mono text-xs text-success">GPS pronto: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}</p>
-              )}
-            </div>
-            {jobType === "chat" && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <MessageSquare className="h-4 w-4" /> Modo chat
+          <div className="flex flex-1 flex-col gap-5 p-6">
+            {jobType === "visit" ? (
+              <>
+                <div className="rounded-2xl border border-border bg-card-elevated p-5">
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-accent" />
+                    <p className="font-semibold">Endereço da visita</p>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">{VISIT_ADDRESS_PLACEHOLDER}</p>
+                  <a
+                    href={mapHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Abrir no mapa
+                  </a>
+                </div>
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <div className="flex items-center gap-3">
+                    <Navigation className="h-5 w-5 text-accent" />
+                    <p className="font-semibold">Check-in com GPS</p>
+                  </div>
+                  {coords ? (
+                    <p className="mt-2 font-mono text-xs text-success">
+                      GPS pronto: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-xs text-warning-foreground">
+                      Aguardando GPS… autorize a localização para registrar a chegada.
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    O check-in registra suas coordenadas como prova de chegada antes de iniciar o turno.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
+                <Clock className="h-16 w-16 text-muted-foreground" />
+                <div>
+                  <h2 className="font-display text-2xl font-bold">Pronto para começar?</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {jobType === "chat" && "Você atenderá clientes via chat."}
+                    {jobType === "voice" && "Você atenderá ligações."}
+                  </p>
+                </div>
+                {jobType === "chat" && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <MessageSquare className="h-4 w-4" /> Modo chat
+                  </div>
+                )}
               </div>
             )}
           </div>
