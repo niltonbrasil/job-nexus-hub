@@ -48,6 +48,13 @@ type Acceptance = {
   id: string;
   accepted_at: string;
   status: string;
+  shift_executions: Array<{
+    status: string;
+    hours_worked: number | null;
+    applied_hours: number | null;
+    applied_rate_per_hour: number | null;
+    applied_amount: number | null;
+  }> | null;
   shift_offers: {
     demand_id: string;
     demands: {
@@ -138,7 +145,7 @@ function WorkerApp() {
 
     const { data: accs } = await supabase
       .from("shift_acceptances")
-      .select("id, accepted_at, status, shift_offers(demand_id, demands(job_type, date, hours_required, contract_services(price_per_hour, contracts(name, clients(name)))))")
+      .select("id, accepted_at, status, shift_executions(status, hours_worked, applied_hours, applied_rate_per_hour, applied_amount), shift_offers(demand_id, demands(job_type, date, hours_required, contract_services(price_per_hour, contracts(name, clients(name)))))")
       .eq("worker_id", wid)
       .order("accepted_at", { ascending: false })
       .limit(50);
@@ -174,12 +181,26 @@ function WorkerApp() {
     );
   }
 
-  const earningsFor = (a: Acceptance) => {
+  // Snapshot-first: usa applied_* da execução completed quando disponível.
+  // Fallback (legado): hours_required × price_per_hour atual do contrato.
+  const breakdownFor = (a: Acceptance) => {
+    const exec = a.shift_executions?.find((e) => e.status === "completed");
     const d = a.shift_offers?.demands;
-    const rate = Number(d?.contract_services?.price_per_hour ?? 0);
-    return (d?.hours_required ?? 0) * rate;
+    const contractRate = Number(d?.contract_services?.price_per_hour ?? 0);
+    if (exec && exec.applied_amount != null) {
+      return {
+        hours: Number(exec.applied_hours ?? exec.hours_worked ?? 0),
+        rate: Number(exec.applied_rate_per_hour ?? contractRate),
+        total: Number(exec.applied_amount),
+        legacy: false,
+      };
+    }
+    const hours = Number(d?.hours_required ?? 0);
+    return { hours, rate: contractRate, total: hours * contractRate, legacy: true };
   };
-  const earnings = acceptances.filter((a) => a.status === "accepted").reduce((s, a) => s + earningsFor(a), 0);
+  const earnings = acceptances
+    .filter((a) => a.status === "accepted")
+    .reduce((s, a) => s + breakdownFor(a).total, 0);
 
   // Filtros derivados do perfil operacional (TODO: otimizar como query Supabase).
   const filteredOffers = offers.filter((o) => {
@@ -430,10 +451,13 @@ function WorkerApp() {
                 acceptances.map((a) => {
                   const d = a.shift_offers?.demands;
                   if (!d) return null;
+                  const b = breakdownFor(a);
+                  const tooltip = `${b.hours}h × R$ ${b.rate.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}/h = R$ ${b.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}${b.legacy ? " (estimado · legado)" : ""}`;
                   return (
                     <div
                       key={a.id}
                       className="flex items-center justify-between rounded-xl border border-border bg-card p-3 text-sm"
+                      title={tooltip}
                     >
                       <div className="min-w-0 flex-1 pr-3">
                         <p className="truncate text-sm font-medium">
@@ -441,11 +465,12 @@ function WorkerApp() {
                           {d.contract_services?.contracts?.name ? ` · ${d.contract_services.contracts.name}` : ""}
                         </p>
                         <p className="text-xs text-muted-foreground capitalize">
-                          {d.job_type} · {d.date} · {d.hours_required}h
+                          {d.job_type} · {d.date} · {b.hours}h × R$ {b.rate.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}/h
+                          {b.legacy ? " · estimado" : ""}
                         </p>
                       </div>
                       <span className="font-mono text-sm font-semibold text-accent">
-                        R$ {earningsFor(a).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        R$ {b.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   );
