@@ -149,57 +149,57 @@ function Contracts() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Duração</Label>
+                  <Label>Plano</Label>
                   <select
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value as "1" | "3" | "6")}
+                    value={planLevel}
+                    onChange={(e) => setPlanLevel(e.target.value as PlanLevel)}
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                   >
-                    <option value="1">1 mês</option>
-                    <option value="3">3 meses</option>
-                    <option value="6">6 meses</option>
+                    {(Object.keys(PLAN_CONFIG) as PlanLevel[]).map((p) => (
+                      <option key={p} value={p}>{PLAN_CONFIG[p].label}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Tipo</Label>
+                  <Label>Tipo de serviço</Label>
                   <select
                     value={serviceType}
                     onChange={(e) => setServiceType(e.target.value as "chat" | "voice" | "visit")}
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                   >
-                    <option value="chat">Chat</option>
-                    <option value="voice">Voz</option>
+                    <option value="chat">Chat (provaDeVida)</option>
+                    <option value="voice">Voz (avaliarDiaSeguinte)</option>
                     <option value="visit">Visita</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Horas/dia</Label>
-                  <select
-                    value={hoursPerDay}
-                    onChange={(e) => setHoursPerDay(e.target.value as "4" | "12" | "24")}
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                  >
-                    <option value="4">4h</option>
-                    <option value="12">12h</option>
-                    <option value="24">24h</option>
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-2">
-                  <Label>Profissionais mínimos</Label>
+                  <Label>Créditos</Label>
+                  <select
+                    value={creditsDays}
+                    onChange={(e) => setCreditsDays(Number(e.target.value))}
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    {CREDITS_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Buffer (p)</Label>
                   <Input
                     type="number"
-                    min={1}
-                    value={minWorkers}
-                    onChange={(e) => setMinWorkers(Number(e.target.value))}
+                    min={0}
+                    value={paddingDays}
+                    onChange={(e) => setPaddingDays(Number(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Preço por hora (R$)</Label>
+                  <Label>R$/hora</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -210,37 +210,35 @@ function Contracts() {
                 </div>
               </div>
 
-              <div className="space-y-2 rounded-lg border border-border bg-secondary/30 p-3">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Regras de geração
-                </Label>
-                <div className="grid grid-cols-3 gap-3 text-sm">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={weekend}
-                      onChange={(e) => setWeekend(e.target.checked)}
-                    />
-                    Finais de semana
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={nightShift}
-                      onChange={(e) => setNightShift(e.target.checked)}
-                    />
-                    Turno noturno
-                  </label>
-                  <select
-                    value={parity}
-                    onChange={(e) => setParity(e.target.value as "none" | "odd" | "even")}
-                    className="h-9 rounded-md border border-input bg-background px-2 text-xs"
-                  >
-                    <option value="none">Todos os dias</option>
-                    <option value="odd">Dias ímpares</option>
-                    <option value="even">Dias pares</option>
-                  </select>
+              <div className="rounded-lg border border-border bg-secondary/30 p-3 text-xs text-muted-foreground space-y-1">
+                <div className="flex justify-between">
+                  <span>Política aplicada</span>
+                  <span className="font-mono">{cfg.label}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span>Blocos × duração</span>
+                  <span className="font-mono">{cfg.blocks} × {cfg.hours_per_day / cfg.blocks}h</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Start por paridade · Folguistas ativos</span>
+                  <span className="font-mono">{cfg.prio_per_parity} · {cfg.folguistas_ativos}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Mínimo de profissionais</span>
+                  <span className="font-mono">{cfg.min_workers}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Janela total</span>
+                  <span className="font-mono">{creditsDays} + {paddingDays} dias</span>
+                </div>
+                <label className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    checked={weekend}
+                    onChange={(e) => setWeekend(e.target.checked)}
+                  />
+                  Gerar plantões em finais de semana
+                </label>
               </div>
 
               <DialogFooter>
