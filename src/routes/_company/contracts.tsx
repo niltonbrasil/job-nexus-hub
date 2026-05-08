@@ -49,6 +49,8 @@ function Contracts() {
   const [shiftType, setShiftType] = useState<"day" | "night">("day");
   const [parity, setParity] = useState<"any" | "odd" | "even">("any");
   const [crewSize, setCrewSize] = useState<number>(4);
+  const [professionId, setProfessionId] = useState<string>("");
+  const [professions, setProfessions] = useState<{ id: string; name: string; code: string }[]>([]);
   const cfg = PLAN_CONFIG[planLevel];
   const isPlano2 = planLevel === "plano2";
 
@@ -63,6 +65,12 @@ function Contracts() {
       .in("client_id", ids)
       .order("full_name");
     setPatients(pts ?? []);
+    const { data: profs } = await supabase
+      .from("professions")
+      .select("id, name, code")
+      .eq("active", true)
+      .order("name");
+    setProfessions(profs ?? []);
     const { data } = await supabase
       .from("contracts")
       .select("id, name, start_date, end_date, status, contract_services(id, service_type, hours_per_day, min_workers, price_per_hour)")
@@ -123,6 +131,7 @@ function Contracts() {
       },
       rules: { weekend, night_shift: isPlano2 ? true : shiftType === "night", parity },
       patient_id: patientId || null,
+      profession_id: professionId || null,
     });
     if (svcErr) {
       toast.error(svcErr.message);
@@ -178,6 +187,21 @@ function Contracts() {
                   ))}
                 </select>
                 <p className="text-xs text-muted-foreground">Vincula o contrato ao paciente; ativa o bloqueio automático de conflito 12h.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Profissão exigida</Label>
+                <select
+                  value={professionId}
+                  onChange={(e) => setProfessionId(e.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">— qualquer profissão —</option>
+                  {professions.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">Restringe quem pode receber as ofertas (filtra pela credencial do profissional).</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

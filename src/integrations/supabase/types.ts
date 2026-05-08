@@ -220,6 +220,7 @@ export type Database = {
           personalization: Json
           plan_level: string
           price_per_hour: number
+          profession_id: string | null
           rules: Json
           service_type: Database["public"]["Enums"]["service_type"]
         }
@@ -235,6 +236,7 @@ export type Database = {
           personalization?: Json
           plan_level?: string
           price_per_hour?: number
+          profession_id?: string | null
           rules?: Json
           service_type: Database["public"]["Enums"]["service_type"]
         }
@@ -250,6 +252,7 @@ export type Database = {
           personalization?: Json
           plan_level?: string
           price_per_hour?: number
+          profession_id?: string | null
           rules?: Json
           service_type?: Database["public"]["Enums"]["service_type"]
         }
@@ -266,6 +269,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_services_profession_id_fkey"
+            columns: ["profession_id"]
+            isOneToOne: false
+            referencedRelation: "professions"
             referencedColumns: ["id"]
           },
         ]

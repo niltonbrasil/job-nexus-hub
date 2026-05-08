@@ -1,0 +1,1 @@
+ALTER TABLE public.contract_services ADD COLUMN IF NOT EXISTS profession_id uuid REFERENCES public.professions(id);
