@@ -814,6 +814,7 @@ export type Database = {
           operations_profile_completed: boolean
           parity_scope: string
           phone: string | null
+          shift_preference: string
           status: Database["public"]["Enums"]["worker_status"]
           team: string | null
           type: Database["public"]["Enums"]["worker_type"]
@@ -834,6 +835,7 @@ export type Database = {
           operations_profile_completed?: boolean
           parity_scope?: string
           phone?: string | null
+          shift_preference?: string
           status?: Database["public"]["Enums"]["worker_status"]
           team?: string | null
           type?: Database["public"]["Enums"]["worker_type"]
@@ -854,6 +856,7 @@ export type Database = {
           operations_profile_completed?: boolean
           parity_scope?: string
           phone?: string | null
+          shift_preference?: string
           status?: Database["public"]["Enums"]["worker_status"]
           team?: string | null
           type?: Database["public"]["Enums"]["worker_type"]

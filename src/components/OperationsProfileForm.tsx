@@ -15,6 +15,7 @@ export type OperationsProfile = {
   line_parity_preference: "odd" | "even" | "any";
   weekend_offer_advance: boolean;
   max_hours_per_day: number;
+  shift_preference: "any" | "day" | "night";
 };
 
 export const DEFAULT_OPS_PROFILE: OperationsProfile = {
@@ -26,7 +27,14 @@ export const DEFAULT_OPS_PROFILE: OperationsProfile = {
   line_parity_preference: "any",
   weekend_offer_advance: true,
   max_hours_per_day: 12,
+  shift_preference: "any",
 };
+
+const SHIFT_OPTIONS = [
+  { value: "any", label: "Diurno e noturno", hint: "Recebo ofertas de qualquer turno" },
+  { value: "day", label: "Somente diurno (08–20)", hint: "Plantões durante o dia" },
+  { value: "night", label: "Somente noturno (20–08)", hint: "Plantões que atravessam a noite" },
+] as const;
 
 const ROUTE_OPTIONS = [
   { value: "any", label: "Qualquer dia elegível", hint: "Recebo ofertas de dias pares e ímpares" },
@@ -205,6 +213,35 @@ export function OperationsProfileForm({
           </div>
         </section>
       )}
+
+      {/* Turno preferido */}
+      <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <div>
+          <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Turno preferido
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Define se você quer ofertas <strong>diurnas</strong>, <strong>noturnas</strong> ou ambas.
+          </p>
+        </div>
+        <div className="space-y-2">
+          {SHIFT_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => set("shift_preference", o.value)}
+              className={`w-full rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                v.shift_preference === o.value
+                  ? "border-accent bg-accent/10"
+                  : "border-border bg-background hover:border-accent/40"
+              }`}
+            >
+              <p className="text-sm font-semibold">{o.label}</p>
+              <p className="text-xs text-muted-foreground">{o.hint}</p>
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* Preview 7 dias */}
       <section className="space-y-3 rounded-xl border border-border bg-card p-4">
