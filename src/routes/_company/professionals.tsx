@@ -21,6 +21,13 @@ type Worker = {
   status: string;
   type: string;
   team: Team | null;
+  shift_preference: "any" | "day" | "night" | null;
+};
+
+const SHIFT_LABEL: Record<"any" | "day" | "night", string> = {
+  any: "Diurno e noturno",
+  day: "Somente diurno (08–20)",
+  night: "Somente noturno (20–08)",
 };
 
 type Metric = {
@@ -49,7 +56,7 @@ function Pros() {
   const reload = async () => {
     const { data } = await supabase
       .from("workers")
-      .select("id, name, email, phone, status, type, team")
+      .select("id, name, email, phone, status, type, team, shift_preference")
       .order("name");
     setWorkers((data as Worker[]) ?? []);
     const ids = (data ?? []).map((w) => w.id);
@@ -306,6 +313,21 @@ function Pros() {
               </div>
               <p className="text-[11px] text-muted-foreground">
                 Para alterar, peça ao profissional para atualizar o perfil operacional.
+              </p>
+            </div>
+
+            <div className="mt-5 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Turno preferido</p>
+              <div className="flex items-center justify-between rounded-md border border-border bg-secondary/40 px-3 py-2.5 text-sm">
+                <span className="font-medium">
+                  {SHIFT_LABEL[(selected.shift_preference ?? "any") as "any" | "day" | "night"]}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Definido pelo profissional
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Filtra automaticamente as ofertas que ele recebe (diurnas, noturnas ou ambas).
               </p>
             </div>
 
