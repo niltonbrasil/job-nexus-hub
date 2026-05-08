@@ -83,13 +83,22 @@ function Schedule() {
 
   const generateNextWeek = async () => {
     if (!user) return;
-    const now = new Date();
+    // Usa o calendário em America/Sao_Paulo para evitar off-by-one
+    // (ex.: clicar 21h em SP fazia toISOString().slice(0,10) pular para o dia seguinte em UTC).
+    const fmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Sao_Paulo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const todaySP = fmt.format(new Date()); // YYYY-MM-DD
+    const [y, m, dd] = todaySP.split("-").map(Number);
     let totalCreated = 0;
     let firstError: string | null = null;
     for (let d = 0; d < 7; d++) {
-      const day = new Date(now);
-      day.setDate(now.getDate() + d);
-      const dateStr = day.toISOString().slice(0, 10);
+      // Aritmética por UTC só para somar dias; o resultado é re-formatado em SP.
+      const base = new Date(Date.UTC(y, m - 1, dd + d, 12, 0, 0));
+      const dateStr = fmt.format(base);
       const { data, error } = await supabase.rpc("generate_shifts_for_date", { _date: dateStr });
       if (error) {
         if (!firstError) firstError = error.message;
