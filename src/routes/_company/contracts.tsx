@@ -301,6 +301,14 @@ function Contracts() {
                   <span>Janela total</span>
                   <span className="font-mono">{creditsDays} + {paddingDays} dias</span>
                 </div>
+                <div className="flex justify-between">
+                  <span>Turno · Paridade · Equipe</span>
+                  <span className="font-mono">
+                    {isPlano2 ? "24h" : shiftType === "day" ? "08–20" : "20–08+1"} ·{" "}
+                    {parity === "any" ? "todos" : parity === "odd" ? "ímpares" : "pares"} ·{" "}
+                    {crewSize} pessoas
+                  </span>
+                </div>
                 <label className="flex items-center gap-2 pt-2">
                   <input
                     type="checkbox"
