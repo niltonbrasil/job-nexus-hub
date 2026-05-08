@@ -214,36 +214,7 @@ export function OperationsProfileForm({
         </section>
       )}
 
-      {/* Turno preferido */}
-      <section className="space-y-3 rounded-xl border border-border bg-card p-4">
-        <div>
-          <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Turno preferido
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Define se você quer ofertas <strong>diurnas</strong>, <strong>noturnas</strong> ou ambas.
-          </p>
-        </div>
-        <div className="space-y-2">
-          {SHIFT_OPTIONS.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => set("shift_preference", o.value)}
-              className={`w-full rounded-lg border px-3 py-2.5 text-left transition-colors ${
-                v.shift_preference === o.value
-                  ? "border-accent bg-accent/10"
-                  : "border-border bg-background hover:border-accent/40"
-              }`}
-            >
-              <p className="text-sm font-semibold">{o.label}</p>
-              <p className="text-xs text-muted-foreground">{o.hint}</p>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* Preview 7 dias */}
+      {/* Preview 7 dias (logo após Rota) */}
       <section className="space-y-3 rounded-xl border border-border bg-card p-4">
         <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Próximos 7 dias
@@ -271,6 +242,35 @@ export function OperationsProfileForm({
         <p className="text-[11px] text-muted-foreground">
           ✓ elegível para receber ofertas · — fora das suas regras
         </p>
+      </section>
+
+      {/* Turno preferido */}
+      <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+        <div>
+          <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Turno preferido
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Define se você quer ofertas <strong>diurnas</strong>, <strong>noturnas</strong> ou ambas.
+          </p>
+        </div>
+        <div className="space-y-2">
+          {SHIFT_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => set("shift_preference", o.value)}
+              className={`w-full rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                v.shift_preference === o.value
+                  ? "border-accent bg-accent/10"
+                  : "border-border bg-background hover:border-accent/40"
+              }`}
+            >
+              <p className="text-sm font-semibold">{o.label}</p>
+              <p className="text-xs text-muted-foreground">{o.hint}</p>
+            </button>
+          ))}
+        </div>
       </section>
 
       {/* Carga máxima */}
