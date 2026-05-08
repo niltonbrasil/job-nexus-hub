@@ -21,6 +21,13 @@ type Worker = {
   status: string;
   type: string;
   team: Team | null;
+  shift_preference: "any" | "day" | "night" | null;
+};
+
+const SHIFT_LABEL: Record<"any" | "day" | "night", string> = {
+  any: "Diurno e noturno",
+  day: "Somente diurno (08–20)",
+  night: "Somente noturno (20–08)",
 };
 
 type Metric = {
