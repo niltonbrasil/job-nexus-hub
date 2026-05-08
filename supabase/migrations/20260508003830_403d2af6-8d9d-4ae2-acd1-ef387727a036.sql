@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.generate_shifts_for_date(date) TO authenticated;
