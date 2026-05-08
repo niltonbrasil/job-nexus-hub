@@ -189,6 +189,21 @@ function Contracts() {
                 <p className="text-xs text-muted-foreground">Vincula o contrato ao paciente; ativa o bloqueio automático de conflito 12h.</p>
               </div>
 
+              <div className="space-y-2">
+                <Label>Profissão exigida</Label>
+                <select
+                  value={professionId}
+                  onChange={(e) => setProfessionId(e.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">— qualquer profissão —</option>
+                  {professions.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">Restringe quem pode receber as ofertas (filtra pela credencial do profissional).</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Plano</Label>
