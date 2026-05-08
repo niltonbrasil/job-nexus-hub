@@ -46,7 +46,11 @@ function Contracts() {
   const [weekend, setWeekend] = useState(true);
   const [patientId, setPatientId] = useState<string>("");
   const [patients, setPatients] = useState<{ id: string; full_name: string }[]>([]);
+  const [shiftType, setShiftType] = useState<"day" | "night">("day");
+  const [parity, setParity] = useState<"any" | "odd" | "even">("any");
+  const [crewSize, setCrewSize] = useState<number>(4);
   const cfg = PLAN_CONFIG[planLevel];
+  const isPlano2 = planLevel === "plano2";
 
   const load = async () => {
     if (!user) return;
