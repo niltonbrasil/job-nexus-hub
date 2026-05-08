@@ -49,6 +49,8 @@ function Contracts() {
   const [shiftType, setShiftType] = useState<"day" | "night">("day");
   const [parity, setParity] = useState<"any" | "odd" | "even">("any");
   const [crewSize, setCrewSize] = useState<number>(4);
+  const [professionId, setProfessionId] = useState<string>("");
+  const [professions, setProfessions] = useState<{ id: string; name: string; code: string }[]>([]);
   const cfg = PLAN_CONFIG[planLevel];
   const isPlano2 = planLevel === "plano2";
 
