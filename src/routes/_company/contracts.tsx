@@ -117,8 +117,11 @@ function Contracts() {
         prio_per_parity: cfg.prio_per_parity,
         folguistas_ativos: cfg.folguistas_ativos,
         blocks: cfg.blocks,
+        shift_type: isPlano2 ? "any" : shiftType,
+        parity,
+        crew_size: crewSize,
       },
-      rules: { weekend, night_shift: cfg.hours_per_day >= 12 },
+      rules: { weekend, night_shift: isPlano2 ? true : shiftType === "night", parity },
       patient_id: patientId || null,
     });
     if (svcErr) {
