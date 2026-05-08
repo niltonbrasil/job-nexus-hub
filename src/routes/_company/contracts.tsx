@@ -209,6 +209,45 @@ function Contracts() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-2">
+                  <Label>Turno declarado</Label>
+                  <select
+                    value={isPlano2 ? "any" : shiftType}
+                    disabled={isPlano2}
+                    onChange={(e) => setShiftType(e.target.value as "day" | "night")}
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
+                  >
+                    <option value="day">Diurno (08–20)</option>
+                    <option value="night">Noturno (20–08+1)</option>
+                    {isPlano2 && <option value="any">Dia + Noite (24h)</option>}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Paridade dos dias</Label>
+                  <select
+                    value={parity}
+                    onChange={(e) => setParity(e.target.value as "any" | "odd" | "even")}
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="any">Todos os dias</option>
+                    <option value="odd">Somente dias ímpares</option>
+                    <option value="even">Somente dias pares</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Equipe (slots)</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={8}
+                    value={crewSize}
+                    onChange={(e) => setCrewSize(Number(e.target.value))}
+                  />
+                  <p className="text-[10px] text-muted-foreground">Padrão 4: 1 ímpar + 1 par + 2 folguistas.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-2">
                   <Label>Créditos</Label>
                   <select
                     value={creditsDays}
