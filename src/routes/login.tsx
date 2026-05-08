@@ -42,13 +42,22 @@ function LoginPage() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setSubmitting(false);
-    if (error) {
-      toast.error(error.message);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.user) {
+      setSubmitting(false);
+      toast.error(error?.message ?? "Falha no login");
       return;
     }
+    // Lê role direto do banco (não depende do AuthProvider terminar de carregar)
+    const { data: rolesData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user.id);
+    const userRoles = (rolesData ?? []).map((r) => r.role as string);
+    setSubmitting(false);
     toast.success("Bem-vindo de volta.");
+    const target = userRoles.includes("worker") ? "/app" : "/dashboard";
+    navigate({ to: target });
   };
 
   return (
