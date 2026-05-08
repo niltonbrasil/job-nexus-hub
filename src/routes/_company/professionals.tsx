@@ -316,6 +316,21 @@ function Pros() {
               </p>
             </div>
 
+            <div className="mt-5 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Turno preferido</p>
+              <div className="flex items-center justify-between rounded-md border border-border bg-secondary/40 px-3 py-2.5 text-sm">
+                <span className="font-medium">
+                  {SHIFT_LABEL[(selected.shift_preference ?? "any") as "any" | "day" | "night"]}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Definido pelo profissional
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Filtra automaticamente as ofertas que ele recebe (diurnas, noturnas ou ambas).
+              </p>
+            </div>
+
             <div className="mt-5 flex flex-col gap-2 sm:flex-row">
               <Button
                 variant="outline"
