@@ -304,24 +304,57 @@ function Schedule() {
               </div>
             </div>
 
-            {selected.plan_snapshot && Object.keys(selected.plan_snapshot).length > 0 && (
-              <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-3 text-xs">
-                <p className="mb-2 font-semibold uppercase tracking-wider text-muted-foreground">
-                  Política aplicada
-                </p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
-                  {Object.entries(selected.plan_snapshot as Record<string, unknown>).map(([k, v]) => (
-                    <div key={k} className="flex justify-between gap-2">
-                      <span className="text-muted-foreground">{k}</span>
-                      <span>{String(v)}</span>
-                    </div>
-                  ))}
+            {selected.plan_snapshot && Object.keys(selected.plan_snapshot).length > 0 && (() => {
+              const snap = selected.plan_snapshot as Record<string, unknown>;
+              const PLAN_LABEL: Record<string, string> = {
+                plano1: "Plano 1 — 12h",
+                plano2: "Plano 2 — 24h (2×12h)",
+                plano3: "Plano 3 — 4h",
+              };
+              const SHIFT_LABEL: Record<string, string> = {
+                day: "Diurno (08–20)",
+                night: "Noturno (20–08+1)",
+                any: "Dia + Noite",
+              };
+              const PARITY_LABEL: Record<string, string> = {
+                impar: "Dia ímpar",
+                par: "Dia par",
+                odd: "Somente ímpares",
+                even: "Somente pares",
+                any: "Todos os dias",
+                all: "Todos os dias",
+              };
+              const yn = (v: unknown) => (v ? "Sim" : "Não");
+              const rows: Array<[string, string]> = [];
+              if (snap.plan_level) rows.push(["Plano", PLAN_LABEL[String(snap.plan_level)] ?? String(snap.plan_level)]);
+              if (snap.shift_type) rows.push(["Turno", SHIFT_LABEL[String(snap.shift_type)] ?? String(snap.shift_type)]);
+              if (snap.parity) rows.push(["Dia do mês", PARITY_LABEL[String(snap.parity)] ?? String(snap.parity)]);
+              if (snap.parity_rule) rows.push(["Regra de paridade", PARITY_LABEL[String(snap.parity_rule)] ?? String(snap.parity_rule)]);
+              if (snap.crew_size != null) rows.push(["Equipe (slots)", `${snap.crew_size} pessoas`]);
+              if (snap.blocks != null) rows.push(["Blocos no dia", String(snap.blocks)]);
+              if (snap.block_hours != null) rows.push(["Duração do bloco", `${snap.block_hours}h`]);
+              if (snap.is_weekend != null) rows.push(["Fim de semana", yn(snap.is_weekend)]);
+              if (snap.credits_days != null) rows.push(["Janela de cobertura", `${snap.credits_days} dias`]);
+              if (snap.padding_days != null) rows.push(["Buffer extra", `${snap.padding_days} dias`]);
+              return (
+                <div className="mt-4 rounded-lg border border-border bg-secondary/30 p-4 text-sm">
+                  <p className="mb-3 font-semibold uppercase tracking-wider text-xs text-muted-foreground">
+                    Política aplicada
+                  </p>
+                  <dl className="grid grid-cols-1 gap-y-2 sm:grid-cols-2 sm:gap-x-6">
+                    {rows.map(([label, val]) => (
+                      <div key={label} className="flex items-baseline justify-between gap-2 border-b border-border/50 pb-1">
+                        <dt className="text-muted-foreground">{label}</dt>
+                        <dd className="font-medium text-right">{val}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {selected.block_index > 0 && (
+                    <p className="mt-3 text-xs text-muted-foreground">Bloco #{selected.block_index + 1}</p>
+                  )}
                 </div>
-                {selected.block_index > 0 && (
-                  <p className="mt-2 text-muted-foreground">Bloco #{selected.block_index + 1}</p>
-                )}
-              </div>
-            )}
+              );
+            })()}
 
             {offers.length > 0 && (
               <div className="mt-4 space-y-2">
