@@ -56,7 +56,7 @@ function Pros() {
   const reload = async () => {
     const { data } = await supabase
       .from("workers")
-      .select("id, name, email, phone, status, type, team")
+      .select("id, name, email, phone, status, type, team, shift_preference")
       .order("name");
     setWorkers((data as Worker[]) ?? []);
     const ids = (data ?? []).map((w) => w.id);
