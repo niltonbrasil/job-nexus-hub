@@ -131,6 +131,7 @@ function Contracts() {
       },
       rules: { weekend, night_shift: isPlano2 ? true : shiftType === "night", parity },
       patient_id: patientId || null,
+      profession_id: professionId || null,
     });
     if (svcErr) {
       toast.error(svcErr.message);
