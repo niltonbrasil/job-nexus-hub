@@ -65,6 +65,12 @@ function Contracts() {
       .in("client_id", ids)
       .order("full_name");
     setPatients(pts ?? []);
+    const { data: profs } = await supabase
+      .from("professions")
+      .select("id, name, code")
+      .eq("active", true)
+      .order("name");
+    setProfessions(profs ?? []);
     const { data } = await supabase
       .from("contracts")
       .select("id, name, start_date, end_date, status, contract_services(id, service_type, hours_per_day, min_workers, price_per_hour)")
