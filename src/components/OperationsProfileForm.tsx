@@ -15,6 +15,7 @@ export type OperationsProfile = {
   line_parity_preference: "odd" | "even" | "any";
   weekend_offer_advance: boolean;
   max_hours_per_day: number;
+  shift_preference: "any" | "day" | "night";
 };
 
 export const DEFAULT_OPS_PROFILE: OperationsProfile = {
@@ -26,7 +27,14 @@ export const DEFAULT_OPS_PROFILE: OperationsProfile = {
   line_parity_preference: "any",
   weekend_offer_advance: true,
   max_hours_per_day: 12,
+  shift_preference: "any",
 };
+
+const SHIFT_OPTIONS = [
+  { value: "any", label: "Diurno e noturno", hint: "Recebo ofertas de qualquer turno" },
+  { value: "day", label: "Somente diurno (08–20)", hint: "Plantões durante o dia" },
+  { value: "night", label: "Somente noturno (20–08)", hint: "Plantões que atravessam a noite" },
+] as const;
 
 const ROUTE_OPTIONS = [
   { value: "any", label: "Qualquer dia elegível", hint: "Recebo ofertas de dias pares e ímpares" },
